@@ -15,12 +15,20 @@ private struct FlexboxAssociatedKeys {
     static var flexBasis = "flexBasis"
     static var flex = "flex"
     static var alignSelf = "alignSelf"
+    static var ccMargin = "ccMargin"
 }
 
-extension UIView {
+public let MarginAuto:CGFloat = CGFloat.max
+
+public extension UIView {
 
     func flexBasis(size:CGSize) -> UIView {
         objc_setAssociatedObject(self, &FlexboxAssociatedKeys.flexBasis, NSValue.init(CGSize: size), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        return self
+    }
+
+    func flexBasis(width:CGFloat, _ height:CGFloat) -> UIView {
+        objc_setAssociatedObject(self, &FlexboxAssociatedKeys.flexBasis, NSValue.init(CGSize: CGSizeMake(width, height)), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         return self
     }
 
@@ -38,23 +46,63 @@ extension UIView {
         objc_setAssociatedObject(self, &FlexboxAssociatedKeys.alignSelf, NSNumber.init(long: align.rawValue), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         return self
     }
+
+    func ccMargin(margin:EdgeInsets) -> UIView {
+        objc_setAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin, NSValue.init(UIEdgeInsets: margin), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        return self
+    }
+
+    func ccTop(top:CGFloat) -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        margin.top = top
+        ccMargin(margin)
+        return self
+    }
+
+    func ccLeft(left:CGFloat) -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        margin.left = left
+        ccMargin(margin)
+        return self
+    }
+
+    func ccBottom(bottom:CGFloat) -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        margin.bottom = bottom
+        ccMargin(margin)
+        return self
+    }
+
+    func ccRight(right:CGFloat) -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        margin.right = right
+        ccMargin(margin)
+        return self
+    }
 }
 
-enum JustifyContent {
+@objc public enum JustifyContent: Int{
     case FlexStart, FlexEnd, Center, SpaceBetween, SpaceAround, SpaceSeperate
 }
 
-enum AlignItems: Int {
+@objc public enum AlignItems: Int {
     case Auto, FlexStart, FlexEnd, Center, Baseline, Stretch
 }
 
 private let basisPriority:Float = 751
+private let marginTag:Int = 1
+private let spaceTag:Int = 1
 
-class CCFlexbox: UIView {
+@objc public class CCFlexbox: UIView {
 
     private var items: [UIView]
     private var blanks: [UIView]
-    var vertical: Bool
+    private var margins: [UIView]
+    private var vertical: Bool
     private var justifyContent: JustifyContent
     private var alignItems: AlignItems
     private var oldSize:CGSize
@@ -62,6 +110,7 @@ class CCFlexbox: UIView {
     private init(items: [UIView]) {
         self.items = items
         self.blanks = []
+        self.margins = []
         self.vertical = false
         self.justifyContent = .FlexStart
         self.alignItems = .Stretch
@@ -72,9 +121,10 @@ class CCFlexbox: UIView {
         }
     }
 
-    required init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         self.items = []
         self.blanks = []
+        self.margins = []
         self.vertical = false
         self.justifyContent = .FlexStart
         self.alignItems = .Stretch
@@ -82,56 +132,126 @@ class CCFlexbox: UIView {
         super.init(coder: aDecoder)
     }
 
-    class func row(items: UIView...) -> CCFlexbox {
+    public class func row(items: UIView...) -> CCFlexbox {
         let box = CCFlexbox.init(items: items)
-        box.setNeedsUpdateConstraints()
+        box.setupItems()
         return box
     }
 
-    class func column(items: UIView...) -> CCFlexbox {
+    public class func row(items: [UIView]) -> CCFlexbox {
+        let box = CCFlexbox.init(items: items)
+        box.setupItems()
+        return box
+    }
+
+    public class func column(items: UIView...) -> CCFlexbox {
         let box = CCFlexbox.init(items: items)
         box.vertical = true
-        box.setNeedsUpdateConstraints()
+        box.setupItems()
         return box
     }
 
-    func justifyContent(value:JustifyContent) -> CCFlexbox {
+    public class func column(items: [UIView]) -> CCFlexbox {
+        let box = CCFlexbox.init(items: items)
+        box.vertical = true
+        box.setupItems()
+        return box
+    }
+
+    public func justifyContent(value:JustifyContent) -> CCFlexbox {
         self.justifyContent = value
         self.setNeedsUpdateConstraints()
         return self
     }
 
-    func alignItems(value:AlignItems) -> CCFlexbox {
+    public func alignItems(value:AlignItems) -> CCFlexbox {
         self.alignItems = value
         self.setNeedsUpdateConstraints()
         return self
     }
 
-    override func updateConstraints() {
+    private func setupItems() -> Void {
+        for var index = 0; index < items.count; index++ {
+            let item = items[index]
+            item.translatesAutoresizingMaskIntoConstraints = false
+            let previousSpace = UIView.init()
+            self.addSubview(previousSpace)
+            self.blanks.append(previousSpace)
+            previousSpace.snp_makeConstraints(closure: { (make) -> Void in
+                if index > 0 {
+                    let lastSpace = blanks[1 + (index-1)*2]
+                    if vertical {
+                        make.top.equalTo(lastSpace.snp_bottom)
+                    } else {
+                        make.left.equalTo(lastSpace.snp_right)
+                    }
+                }
+                if vertical {
+                    make.left.width.equalTo(0)
+                } else {
+                    make.top.height.equalTo(0)
+                }
+            })
+            let previousMargin = UIView.init()
+            self.addSubview(previousMargin)
+            self.margins.append(previousMargin)
+            previousMargin.snp_makeConstraints(closure: { (make) -> Void in
+                if vertical {
+                    make.top.equalTo(previousSpace.snp_bottom)
+                    make.bottom.equalTo(item.snp_top)
+                    make.left.width.equalTo(0)
+                } else {
+                    make.left.equalTo(previousSpace.snp_right)
+                    make.right.equalTo(item.snp_left)
+                    make.top.height.equalTo(0)
+                }
+            })
+            self.addSubview(item)
+            let nextMargin = UIView.init()
+            self.addSubview(nextMargin)
+            self.margins.append(nextMargin)
+            nextMargin.snp_makeConstraints(closure: { (make) -> Void in
+                if vertical {
+                    make.top.equalTo(item.snp_bottom)
+                    make.left.width.equalTo(0)
+                } else {
+                    make.left.equalTo(item.snp_right)
+                    make.top.height.equalTo(0)
+                }
+            })
+            let nextSpace = UIView.init()
+            self.addSubview(nextSpace)
+            self.blanks.append(nextSpace)
+            nextSpace.snp_makeConstraints(closure: { (make) -> Void in
+                if vertical {
+                    make.top.equalTo(nextMargin.snp_bottom)
+                    make.left.width.equalTo(0)
+                } else {
+                    make.left.equalTo(nextMargin.snp_right)
+                    make.top.height.equalTo(0)
+                }
+            })
+        }
+    }
+
+    override public func updateConstraints() {
         if CGSizeEqualToSize(self.bounds.size, CGSizeZero) {
             super.updateConstraints()
             return
         }
+//            super.updateConstraints()
+//            return
         if vertical {
-            for view in self.blanks {
-                view.removeFromSuperview()
-            }
-            self.blanks.removeAll()
-
             let boundHeight = self.bounds.size.height
             var contentHeight:CGFloat = 0
             var grows = 0
             var shrinks = 0
-            var hasNoShrink = false
             var shrinkTotal:CGFloat = 0
             var shrinkableHeight:CGFloat = 0
             for item in items {
                 let grow = getFlexGrowForItem(item)
                 grows += grow
                 let shrink = getFlexShrinkForItem(item)
-                if shrink == 0 {
-                    hasNoShrink = true
-                }
                 shrinks += shrink
                 let basis = getFlexBasisForItem(item)
                 if basis.height > 0 {
@@ -151,216 +271,132 @@ class CCFlexbox: UIView {
                         }
                     }
                 }
+                let margins = getMarginForItem(item)
+                if margins.top != MarginAuto {
+                    contentHeight += margins.top
+                }
+                if margins.bottom != MarginAuto {
+                    contentHeight += margins.bottom
+                }
             }
+
             let sizePerGrow = grows > 0 ? (boundHeight - contentHeight) / CGFloat( grows) : 0
             let shrinkPercent = (contentHeight - boundHeight) / shrinkTotal
+            var blankSpaceSize = grows > 0 ? 0 : (boundHeight - contentHeight)
+
+            var autoMargins:[UIView] = []
+
+            for var index = 0; index < items.count; index++ {
+                let item = items[index]
+                self.setHeightConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
+                self.setHorizontalAlignConstraintForItem(item, defaultAlign: alignItems)
+
+                let margins = self.getMarginForItem(item)
+                let topMargin = self.margins[index * 2]
+                topMargin.snp_makeConstraints(closure: { (make) -> Void in
+                    if margins.top == MarginAuto {
+                        autoMargins.append(topMargin)
+                    } else {
+                        make.height.equalTo(margins.top)
+                    }
+                })
+                let bottomMargin = self.margins[1+index*2]
+                bottomMargin.snp_makeConstraints(closure: { (make) -> Void in
+                    if margins.bottom == MarginAuto {
+                        autoMargins.append(bottomMargin)
+                    } else {
+                        make.height.equalTo(margins.bottom)
+                    }
+                })
+            }
+            if blankSpaceSize > 0 && autoMargins.count > 0 {
+                let marginHeight = blankSpaceSize / CGFloat(autoMargins.count)
+                for var index = 0; index < autoMargins.count; index++ {
+                    let margin = autoMargins[index]
+                    margin.snp_makeConstraints(closure: { (make) -> Void in
+                        make.height.equalTo(marginHeight)
+                    })
+                }
+                blankSpaceSize = 0
+            }
+
+            if justifyContent == .FlexStart || justifyContent == .FlexEnd || justifyContent == .Center || blankSpaceSize == 0 {
+                for var index = 0; index < blanks.count; index++ {
+                    let space = blanks[index]
+                    space.snp_makeConstraints(closure: { (make) -> Void in
+                        make.height.equalTo(0)
+                    })
+                }
+            }
 
             switch justifyContent {
             case .FlexStart:
-                for var index = 0; index < items.count; index++ {
-                    let item = items[index]
-                    let previousItem = index == 0 ? self : items[index-1]
-                    item.snp_remakeConstraints(closure: { (make) -> Void in
-                        make.top.equalTo(index == 0 ? previousItem.snp_top : previousItem.snp_bottom)
-                    })
-                    self.setHeightConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                }
+                let firstSpace = self.blanks.first!
+                firstSpace.snp_makeConstraints(closure: { (make) -> Void in
+                    make.top.equalTo(0)
+                })
                 break
             case .FlexEnd:
-                for var index = items.count - 1; index >= 0; index-- {
-                    let item = items[index]
-                    let previousItem = index == (items.count - 1) ? self : items[index+1]
-                    item.snp_remakeConstraints(closure: { (make) -> Void in
-                        make.bottom.equalTo(index == (items.count - 1) ? previousItem.snp_bottom : previousItem.snp_top)
-                    })
-                    self.setHeightConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                }
+                let lastSpace = self.blanks.last!
+                lastSpace.snp_makeConstraints(closure: { (make) -> Void in
+                    make.bottom.equalTo(0)
+                })
                 break
             case .Center:
-                let topSpace = UIView.init()
-                self.addSubview(topSpace)
-                topSpace.snp_makeConstraints(closure: { (make) -> Void in
-                    if hasNoShrink && (contentHeight - shrinkableHeight) > boundHeight {
-                        make.top.equalTo(self).offset((boundHeight - contentHeight + shrinkableHeight) / 2.0)
-                    } else {
-                        make.top.equalTo(self)
-                    }
-                    make.left.width.equalTo(0)
+                let firstSpace = self.blanks.first!
+                firstSpace.snp_makeConstraints(closure: { (make) -> Void in
+                    make.top.equalTo((boundHeight - contentHeight) / 2.0)
                 })
-                for var index = 0; index < items.count; index++ {
-                    let item = items[index]
-                    let previousItem = index == 0 ? topSpace : items[index-1]
-                    item.snp_remakeConstraints(closure: { (make) -> Void in
-                        make.top.equalTo(previousItem.snp_bottom)
-                    })
-                    self.setHeightConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                }
-                let bottomSpace = UIView.init()
-                self.addSubview(bottomSpace)
-                bottomSpace.snp_makeConstraints(closure: { (make) -> Void in
-                    make.top.equalTo(items[items.count-1].snp_bottom)
-                    if hasNoShrink && (contentHeight - shrinkableHeight) > boundHeight {
-                        make.bottom.equalTo(self).offset(-(boundHeight - contentHeight + shrinkableHeight) / 2.0)
-                    } else {
-                        make.bottom.equalTo(self)
-                    }
-                    make.left.width.equalTo(0)
-                    make.height.equalTo(topSpace)
-                    if contentHeight >= boundHeight {
-                        make.height.equalTo(0)
-                    }
-                })
-                self.blanks = [topSpace, bottomSpace]
                 break
             case .SpaceBetween:
-                var previousItem:UIView = self
-                for var index = 0; index < items.count; index++ {
-                    let item = items[index]
-                    if index == 0 {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.top.equalTo(self.snp_top)
+                let firstSpace = self.blanks.first!
+                firstSpace.snp_makeConstraints(closure: { (make) -> Void in
+                    make.top.equalTo(0)
+                    make.height.equalTo(0)
+                })
+                let lastSpace = self.blanks.last!
+                lastSpace.snp_makeConstraints(closure: { (make) -> Void in
+                    make.height.equalTo(0)
+                })
+                if blankSpaceSize > 0 {
+                    let sizePerSpace = blankSpaceSize / CGFloat(blanks.count - 2)
+                    for var index = 1;index < blanks.count - 1;index++ {
+                        let space = blanks[index]
+                        space.snp_makeConstraints(closure: { (make) -> Void in
+                            make.height.equalTo(sizePerSpace)
                         })
-                        self.setHeightConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        if grows == 0 {
-                            let space = self.appendColumnBlankToItem(item)
-                            blanks.append(space)
-                            previousItem = space
-                        } else {
-                            previousItem = item
-                        }
-                    } else if index == items.count - 1 {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.top.equalTo(previousItem.snp_bottom)
-                            if hasNoShrink {
-                                make.bottom.greaterThanOrEqualTo(self)
-                            } else {
-                                make.bottom.equalTo(self)
-                            }
-                        })
-                        self.setHeightConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        for var i = 0; i < blanks.count - 1; i++ {
-                            let firstBlank = blanks[i]
-                            let secondBlank = blanks[i+1]
-                            firstBlank.snp_makeConstraints(closure: { (make) -> Void in
-                                make.height.equalTo(secondBlank)
-                            })
-                        }
-                    } else {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.top.equalTo(previousItem.snp_bottom)
-                        })
-                        self.setHeightConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        if grows == 0 {
-                            let space = self.appendColumnBlankToItem(item)
-                            blanks.append(space)
-                            previousItem = space
-                        } else {
-                            previousItem = item
-                        }
                     }
                 }
                 break
             case .SpaceAround:
-                let firstSpace = UIView.init()
-                self.addSubview(firstSpace)
+                let firstSpace = self.blanks.first!
                 firstSpace.snp_makeConstraints(closure: { (make) -> Void in
-                    if hasNoShrink && (contentHeight - shrinkableHeight) > boundHeight {
-                        make.top.equalTo(self).offset((boundHeight - contentHeight + shrinkableHeight) / 2.0)
-                    } else {
-                        make.top.equalTo(self)
-                    }
-                    make.left.width.equalTo(0)
+                    make.top.equalTo(min((boundHeight - contentHeight) / 2.0, 0))
                 })
-                blanks.append(firstSpace)
-                var previousItem = firstSpace
-                for var index = 0; index < items.count; index++ {
-                    let item = items[index]
-                    if index < items.count - 1 {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.top.equalTo(previousItem.snp_bottom)
-                        })
-                        self.setHeightConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        let space = self.appendColumnBlankToItem(item)
-                        blanks.append(space)
-                        previousItem = space
-                    } else  {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.top.equalTo(previousItem.snp_bottom)
-                        })
-                        self.setHeightConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        let space = self.appendColumnBlankToItem(item)
-                        blanks.append(space)
-                        for var i = 0; i < blanks.count - 1; i++ {
-                            let firstBlank = blanks[i]
-                            let secondBlank = blanks[i+1]
-                            firstBlank.snp_makeConstraints(closure: { (make) -> Void in
-                                if i == 0 {
-                                    make.height.equalTo(secondBlank).dividedBy(2)
-                                } else if i == blanks.count - 2 {
-                                    make.height.equalTo(secondBlank).multipliedBy(2)
-                                } else {
-                                    make.height.equalTo(secondBlank)
-                                }
-                            })
-                        }
+                if blankSpaceSize > 0 {
+                    let sizePerSpace = blankSpaceSize / CGFloat(blanks.count)
+                    for var index = 0;index < blanks.count;index++ {
+                        let space = blanks[index]
                         space.snp_makeConstraints(closure: { (make) -> Void in
-                            if hasNoShrink && (contentHeight - shrinkableHeight) > boundHeight {
-                                make.bottom.equalTo(self).offset(-(boundHeight - contentHeight + shrinkableHeight) / 2.0)
-                            } else {
-                                make.bottom.equalTo(self)
-                            }
-                            if contentHeight >= boundHeight {
-                                make.height.equalTo(0)
-                            }
+                            make.height.equalTo(sizePerSpace)
                         })
                     }
                 }
                 break
             case .SpaceSeperate:
-                let firstSpace = UIView.init()
-                self.addSubview(firstSpace)
+                let firstSpace = self.blanks.first!
                 firstSpace.snp_makeConstraints(closure: { (make) -> Void in
-                    if hasNoShrink && (contentHeight - shrinkableHeight) > boundHeight {
-                        make.top.equalTo(self).offset((boundHeight - contentHeight + shrinkableHeight) / 2.0)
-                    } else {
-                        make.top.equalTo(self)
-                    }
-                    make.left.width.equalTo(0)
+                    make.top.equalTo(min((boundHeight - contentHeight) / 2.0, 0))
                 })
-                blanks.append(firstSpace)
-                var previousItem = firstSpace
-                for var index = 0; index < items.count; index++ {
-                    let item = items[index]
-                    if index < items.count - 1 {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.top.equalTo(previousItem.snp_bottom)
-                        })
-                        self.setHeightConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        let space = self.appendColumnBlankToItem(item)
-                        blanks.append(space)
-                        previousItem = space
-                    } else  {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.top.equalTo(previousItem.snp_bottom)
-                        })
-                        self.setHeightConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        let space = self.appendColumnBlankToItem(item)
-                        blanks.append(space)
-                        for var i = 0; i < blanks.count - 1; i++ {
-                            let firstBlank = blanks[i]
-                            let secondBlank = blanks[i+1]
-                            firstBlank.snp_makeConstraints(closure: { (make) -> Void in
-                                make.height.equalTo(secondBlank)
-                            })
-                        }
+                if blankSpaceSize > 0 {
+                    let sizePerSpace = blankSpaceSize / CGFloat(blanks.count + 2)
+                    for var index = 0;index < blanks.count;index++ {
+                        let space = blanks[index]
                         space.snp_makeConstraints(closure: { (make) -> Void in
-                            if hasNoShrink && (contentHeight - shrinkableHeight) > boundHeight {
-                                make.bottom.equalTo(self).offset(-(boundHeight - contentHeight + shrinkableHeight) / 2.0)
+                            if index == 0 || index == blanks.count - 1 {
+                                make.height.equalTo(sizePerSpace * 2)
                             } else {
-                                make.bottom.equalTo(self)
-                            }
-                            if contentHeight >= boundHeight {
-                                make.height.equalTo(0)
+                                make.height.equalTo(sizePerSpace)
                             }
                         })
                     }
@@ -368,29 +404,18 @@ class CCFlexbox: UIView {
                 break
             }
 
-            for item:UIView in items {
-                self.setHorizontalAlignConstraintForItem(item, defaultAlign: alignItems)
-            }
         } else {
-            for view in self.blanks {
-                view.removeFromSuperview()
-            }
-            self.blanks.removeAll()
 
             let boundWidth = self.bounds.size.width
             var contentWidth:CGFloat = 0
             var grows = 0
             var shrinks = 0
-            var hasNoShrink = false
             var shrinkTotal:CGFloat = 0
             var shrinkableWidth:CGFloat = 0
             for item in items {
                 let grow = getFlexGrowForItem(item)
                 grows += grow
                 let shrink = getFlexShrinkForItem(item)
-                if shrink == 0 {
-                    hasNoShrink = true
-                }
                 shrinks += shrink
                 let basis = getFlexBasisForItem(item)
                 if basis.width > 0 {
@@ -410,232 +435,144 @@ class CCFlexbox: UIView {
                         }
                     }
                 }
+                let margins = getMarginForItem(item)
+                if margins.left != MarginAuto {
+                    contentWidth += margins.left
+                }
+                if margins.right != MarginAuto {
+                    contentWidth += margins.right
+                }
             }
+
             let sizePerGrow = grows > 0 ? (boundWidth - contentWidth) / CGFloat( grows) : 0
             let shrinkPercent = (contentWidth - boundWidth) / shrinkTotal
+            var blankSpaceSize = grows > 0 ? 0 : (boundWidth - contentWidth)
+
+            var autoMargins:[UIView] = []
+
+            for var index = 0; index < items.count; index++ {
+                let item = items[index]
+                self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
+                self.setVerticalAlignConstraintForItem(item, defaultAlign: alignItems)
+
+                let margins = self.getMarginForItem(item)
+                let leftMargin = self.margins[index * 2]
+                leftMargin.snp_makeConstraints(closure: { (make) -> Void in
+                    if margins.left == MarginAuto {
+                        autoMargins.append(leftMargin)
+                    } else {
+                        make.width.equalTo(margins.left)
+                    }
+                })
+                let rightMargin = self.margins[1+index*2]
+                rightMargin.snp_makeConstraints(closure: { (make) -> Void in
+                    if margins.right == MarginAuto {
+                        autoMargins.append(rightMargin)
+                    } else {
+                        make.width.equalTo(margins.right)
+                    }
+                })
+            }
+            if blankSpaceSize > 0 && autoMargins.count > 0 {
+                let marginWidth = blankSpaceSize / CGFloat(autoMargins.count)
+                for var index = 0; index < autoMargins.count; index++ {
+                    let margin = autoMargins[index]
+                    margin.snp_makeConstraints(closure: { (make) -> Void in
+                        make.width.equalTo(marginWidth)
+                    })
+                }
+                blankSpaceSize = 0
+            }
+
+            if justifyContent == .FlexStart || justifyContent == .FlexEnd || justifyContent == .Center || blankSpaceSize == 0 {
+                for var index = 0; index < blanks.count; index++ {
+                    let space = blanks[index]
+                    space.snp_makeConstraints(closure: { (make) -> Void in
+                        make.width.equalTo(0)
+                    })
+                }
+            }
 
             switch justifyContent {
             case .FlexStart:
-                for var index = 0; index < items.count; index++ {
-                    let item = items[index]
-                    let previousItem = index == 0 ? self : items[index-1]
-                    item.snp_remakeConstraints(closure: { (make) -> Void in
-                        make.left.equalTo(index == 0 ? previousItem.snp_left : previousItem.snp_right)
-                    })
-                    self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                }
+                let firstSpace = self.blanks.first!
+                firstSpace.snp_makeConstraints(closure: { (make) -> Void in
+                    make.left.equalTo(0)
+                })
                 break
             case .FlexEnd:
-                for var index = items.count - 1; index >= 0; index-- {
-                    let item = items[index]
-                    let previousItem = index == (items.count - 1) ? self : items[index+1]
-                    item.snp_remakeConstraints(closure: { (make) -> Void in
-                        make.right.equalTo(index == (items.count - 1) ? previousItem.snp_right : previousItem.snp_left)
-                    })
-                    self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                }
+                let lastSpace = self.blanks.last!
+                lastSpace.snp_makeConstraints(closure: { (make) -> Void in
+                    make.right.equalTo(0)
+                })
                 break
             case .Center:
-                let leftSpace = UIView.init()
-                self.addSubview(leftSpace)
-                leftSpace.snp_makeConstraints(closure: { (make) -> Void in
-                    if hasNoShrink && (contentWidth - shrinkableWidth) > boundWidth {
-                        make.left.equalTo(self).offset((boundWidth - contentWidth + shrinkableWidth) / 2.0)
-                    } else {
-                        make.left.equalTo(self)
-                    }
-                    make.top.height.equalTo(0)
+                let firstSpace = self.blanks.first!
+                firstSpace.snp_makeConstraints(closure: { (make) -> Void in
+                    make.left.equalTo((boundWidth - contentWidth) / 2.0)
                 })
-                for var index = 0; index < items.count; index++ {
-                    let item = items[index]
-                    let previousItem = index == 0 ? leftSpace : items[index-1]
-                    item.snp_remakeConstraints(closure: { (make) -> Void in
-                        make.left.equalTo(previousItem.snp_right)
-                    })
-                    self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                }
-                let rightSpace = UIView.init()
-                self.addSubview(rightSpace)
-                rightSpace.snp_makeConstraints(closure: { (make) -> Void in
-                    make.left.equalTo(items[items.count-1].snp_right)
-                    if hasNoShrink && (contentWidth - shrinkableWidth) > boundWidth {
-                        make.right.equalTo(self).offset(-(boundWidth - contentWidth + shrinkableWidth) / 2.0)
-                    } else {
-                        make.right.equalTo(self)
-                    }
-                    make.top.height.equalTo(0)
-                    make.width.equalTo(leftSpace)
-                    if contentWidth >= boundWidth {
-                        make.width.equalTo(0)
-                    }
-                })
-                self.blanks = [leftSpace, rightSpace]
                 break
             case .SpaceBetween:
-                var previousItem:UIView = self
-                for var index = 0; index < items.count; index++ {
-                    let item = items[index]
-                    if index == 0 {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.left.equalTo(self.snp_left)
+                let firstSpace = self.blanks.first!
+                firstSpace.snp_makeConstraints(closure: { (make) -> Void in
+                    make.left.equalTo(0)
+                    make.width.equalTo(0)
+                })
+                let lastSpace = self.blanks.last!
+                lastSpace.snp_makeConstraints(closure: { (make) -> Void in
+                    make.width.equalTo(0)
+                })
+                if blankSpaceSize > 0 {
+                    let sizePerSpace = blankSpaceSize / CGFloat(blanks.count - 2)
+                    for var index = 1;index < blanks.count - 1;index++ {
+                        let space = blanks[index]
+                        space.snp_makeConstraints(closure: { (make) -> Void in
+                            make.width.equalTo(sizePerSpace)
                         })
-                        self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        if grows == 0 {
-                            let space = self.appendRowBlankToItem(item)
-                            blanks.append(space)
-                            previousItem = space
-                        } else {
-                            previousItem = item
-                        }
-                    } else if index == items.count - 1 {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.left.equalTo(previousItem.snp_right)
-                            if hasNoShrink {
-                                make.right.greaterThanOrEqualTo(self)
-                            } else {
-                                make.right.equalTo(self)
-                            }
-                        })
-                        self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        for var i = 0; i < blanks.count - 1; i++ {
-                            let firstBlank = blanks[i]
-                            let secondBlank = blanks[i+1]
-                            firstBlank.snp_makeConstraints(closure: { (make) -> Void in
-                                make.width.equalTo(secondBlank)
-                            })
-                        }
-                    } else {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.left.equalTo(previousItem.snp_right)
-                        })
-                        self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        if grows == 0 {
-                            let space = self.appendRowBlankToItem(item)
-                            blanks.append(space)
-                            previousItem = space
-                        } else {
-                            previousItem = item
-                        }
                     }
                 }
                 break
             case .SpaceAround:
-                let firstSpace = UIView.init()
-                self.addSubview(firstSpace)
+                let firstSpace = self.blanks.first!
                 firstSpace.snp_makeConstraints(closure: { (make) -> Void in
-                    if hasNoShrink && (contentWidth - shrinkableWidth) > boundWidth {
-                        make.left.equalTo(self).offset((boundWidth - contentWidth + shrinkableWidth) / 2.0)
-                    } else {
-                        make.left.equalTo(self)
-                    }
-                    make.top.height.equalTo(0)
+                    make.left.equalTo(min((boundWidth - contentWidth) / 2.0, 0))
                 })
-                blanks.append(firstSpace)
-                var previousItem = firstSpace
-                for var index = 0; index < items.count; index++ {
-                    let item = items[index]
-                    if index < items.count - 1 {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.left.equalTo(previousItem.snp_right)
-                        })
-                        self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        let space = self.appendRowBlankToItem(item)
-                        blanks.append(space)
-                        previousItem = space
-                    } else  {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.left.equalTo(previousItem.snp_right)
-                        })
-                        self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        let space = self.appendRowBlankToItem(item)
-                        blanks.append(space)
-                        for var i = 0; i < blanks.count - 1; i++ {
-                            let firstBlank = blanks[i]
-                            let secondBlank = blanks[i+1]
-                            firstBlank.snp_makeConstraints(closure: { (make) -> Void in
-                                if i == 0 {
-                                    make.width.equalTo(secondBlank).dividedBy(2)
-                                } else if i == blanks.count - 2 {
-                                    make.width.equalTo(secondBlank).multipliedBy(2)
-                                } else {
-                                    make.width.equalTo(secondBlank)
-                                }
-                            })
-                        }
+                if blankSpaceSize > 0 {
+                    let sizePerSpace = blankSpaceSize / CGFloat(blanks.count)
+                    for var index = 0;index < blanks.count;index++ {
+                        let space = blanks[index]
                         space.snp_makeConstraints(closure: { (make) -> Void in
-                            if hasNoShrink && (contentWidth - shrinkableWidth) > boundWidth {
-                                make.right.equalTo(self).offset(-(boundWidth - contentWidth + shrinkableWidth) / 2.0)
-                            } else {
-                                make.right.equalTo(self)
-                            }
-                            if contentWidth >= boundWidth {
-                                make.width.equalTo(0)
-                            }
+                            make.width.equalTo(sizePerSpace)
                         })
                     }
                 }
                 break
             case .SpaceSeperate:
-                let firstSpace = UIView.init()
-                self.addSubview(firstSpace)
+                let firstSpace = self.blanks.first!
                 firstSpace.snp_makeConstraints(closure: { (make) -> Void in
-                    if hasNoShrink && (contentWidth - shrinkableWidth) > boundWidth {
-                        make.left.equalTo(self).offset((boundWidth - contentWidth + shrinkableWidth) / 2.0)
-                    } else {
-                        make.left.equalTo(self)
-                    }
-                    make.top.height.equalTo(0)
+                    make.left.equalTo(min((boundWidth - contentWidth) / 2.0, 0))
                 })
-                blanks.append(firstSpace)
-                var previousItem = firstSpace
-                for var index = 0; index < items.count; index++ {
-                    let item = items[index]
-                    if index < items.count - 1 {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.left.equalTo(previousItem.snp_right)
-                        })
-                        self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        let space = self.appendRowBlankToItem(item)
-                        blanks.append(space)
-                        previousItem = space
-                    } else  {
-                        item.snp_remakeConstraints(closure: { (make) -> Void in
-                            make.left.equalTo(previousItem.snp_right)
-                        })
-                        self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
-                        let space = self.appendRowBlankToItem(item)
-                        blanks.append(space)
-                        for var i = 0; i < blanks.count - 1; i++ {
-                            let firstBlank = blanks[i]
-                            let secondBlank = blanks[i+1]
-                            firstBlank.snp_makeConstraints(closure: { (make) -> Void in
-                                make.width.equalTo(secondBlank)
-                            })
-                        }
+                if blankSpaceSize > 0 {
+                    let sizePerSpace = blankSpaceSize / CGFloat(blanks.count + 2)
+                    for var index = 0;index < blanks.count;index++ {
+                        let space = blanks[index]
                         space.snp_makeConstraints(closure: { (make) -> Void in
-                            if hasNoShrink && (contentWidth - shrinkableWidth) > boundWidth {
-                                make.right.equalTo(self).offset(-(boundWidth - contentWidth + shrinkableWidth) / 2.0)
+                            if index == 0 || index == blanks.count - 1 {
+                                make.width.equalTo(sizePerSpace * 2)
                             } else {
-                                make.right.equalTo(self)
-                            }
-                            if contentWidth >= boundWidth {
-                                make.width.equalTo(0)
+                                make.width.equalTo(sizePerSpace)
                             }
                         })
                     }
                 }
                 break
-            }
-
-            for item:UIView in items {
-                self.setVerticalAlignConstraintForItem(item, defaultAlign: alignItems)
             }
         }
 
         super.updateConstraints()
     }
 
-    override func layoutSubviews() {
+    override public func layoutSubviews() {
         if !CGSizeEqualToSize(self.bounds.size, self.oldSize) {
             self.setNeedsUpdateConstraints()
             self.oldSize = self.bounds.size
@@ -645,7 +582,7 @@ class CCFlexbox: UIView {
 
     private func getFlexBasisForItem(item:UIView) -> CGSize {
         let basisValue = objc_getAssociatedObject(item, &FlexboxAssociatedKeys.flexBasis)
-        return basisValue == nil ? CGSizeMake(-1, -1) : basisValue.CGSizeValue()
+        return basisValue == nil ? CGSizeMake(UIViewNoIntrinsicMetric, UIViewNoIntrinsicMetric) : basisValue.CGSizeValue()
     }
 
     private func getFlexGrowForItem(item:UIView) -> Int {
@@ -661,6 +598,29 @@ class CCFlexbox: UIView {
     private func getAlignSelfForItem(item:UIView) -> AlignItems {
         let alignValue = objc_getAssociatedObject(item, &FlexboxAssociatedKeys.alignSelf)
         return alignValue == nil ? AlignItems.Auto : AlignItems(rawValue: alignValue.integerValue)!
+    }
+
+    private func getMarginForItem(item:UIView) -> EdgeInsets {
+        let marginValue = objc_getAssociatedObject(item, &FlexboxAssociatedKeys.ccMargin)
+        return marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+    }
+
+    private func getItemSize(item:UIView) -> CGSize {
+        var width:CGFloat = 0
+        var height:CGFloat = 0
+        let size = getFlexBasisForItem(item)
+        let content = item.intrinsicContentSize()
+        if size.width != UIViewNoIntrinsicMetric {
+            width = size.width
+        } else if content.width != UIViewNoIntrinsicMetric {
+            width = content.width
+        }
+        if size.height != UIViewNoIntrinsicMetric {
+            height = size.height
+        } else if content.height != UIViewNoIntrinsicMetric {
+            height = content.height
+        }
+        return CGSizeMake(width, height)
     }
 
     private func setWidthConstraintForItem(item:UIView, sizePerGrow:CGFloat, shrinkPercent:CGFloat) -> Void {
@@ -712,13 +672,21 @@ class CCFlexbox: UIView {
             align = defaultAlign
         }
 
+        var margin = getMarginForItem(item)
+        if margin.top == MarginAuto {
+            margin.top = 0
+        }
+        if margin.bottom == MarginAuto {
+            margin.bottom = 0
+        }
+        
         item.snp_makeConstraints(closure: { (make) -> Void in
             switch align {
             case .FlexStart:
-                make.top.equalTo(self)
+                make.top.equalTo(self).offset(margin.top)
                 break;
             case .FlexEnd:
-                make.bottom.equalTo(self)
+                make.bottom.equalTo(self).offset(-margin.bottom)
                 break;
             case .Center:
                 make.centerY.equalTo(self)
@@ -727,7 +695,7 @@ class CCFlexbox: UIView {
                 make.baseline.equalTo(self)
                 break;
             case .Stretch, .Auto:
-                make.top.bottom.equalTo(self)
+                make.top.bottom.equalTo(self).inset(EdgeInsetsMake(margin.top, left: 0, bottom: margin.bottom, right: 0))
                 break;
             }
             if align != .Stretch && align != .Auto {
@@ -796,19 +764,27 @@ class CCFlexbox: UIView {
             align = defaultAlign
         }
 
+        var margin = getMarginForItem(item)
+        if margin.left == MarginAuto {
+            margin.left = 0
+        }
+        if margin.right == MarginAuto {
+            margin.right = 0
+        }
+
         item.snp_makeConstraints(closure: { (make) -> Void in
             switch align {
             case .FlexStart:
-                make.left.equalTo(self)
+                make.left.equalTo(self).offset(margin.left)
                 break;
             case .FlexEnd:
-                make.right.equalTo(self)
+                make.right.equalTo(self).offset(-margin.right)
                 break;
             case .Center:
                 make.centerX.equalTo(self)
                 break;
             case .Baseline, .Stretch, .Auto:
-                make.left.right.equalTo(self)
+                make.left.right.equalTo(self).inset(EdgeInsetsMake(0, left: margin.left, bottom: 0, right: margin.right))
                 break;
             }
             if align != .Stretch && align != .Auto {
@@ -828,45 +804,33 @@ class CCFlexbox: UIView {
         })
     }
 
-    private func appendRowBlankToItem(item:UIView) -> UIView {
-        let space = UIView.init()
-        self.addSubview(space)
-        space.snp_makeConstraints(closure: { (make) -> Void in
-            make.left.equalTo(item.snp_right)
-            make.top.height.equalTo(0)
-        })
-        return space
-    }
-
-    private func appendColumnBlankToItem(item:UIView) -> UIView {
-        let space = UIView.init()
-        self.addSubview(space)
-        space.snp_makeConstraints(closure: { (make) -> Void in
-            make.top.equalTo(item.snp_bottom)
-            make.left.width.equalTo(0)
-        })
-        return space
-    }
-
-    override func intrinsicContentSize() -> CGSize {
+    override public func intrinsicContentSize() -> CGSize {
         var width:CGFloat = 0
         var height:CGFloat = 0
         for item in items {
             let basis = getFlexBasisForItem(item)
+            let margin = getMarginForItem(item)
             let size = item.intrinsicContentSize()
             if width != UIViewNoIntrinsicMetric {
+                var marginWidth:CGFloat = 0
+                if margin.left != MarginAuto {
+                    marginWidth += margin.left
+                }
+                if margin.right != MarginAuto {
+                    marginWidth += margin.right
+                }
                 if basis.width > 0 {
                     if vertical {
-                        width = max(width, basis.width)
+                        width = max(width, basis.width + marginWidth)
                     } else {
-                        width += basis.width
+                        width += basis.width + marginWidth
                     }
                 } else {
                     if size.width != UIViewNoIntrinsicMetric {
                         if vertical {
-                            width = max(width, size.width)
+                            width = max(width, size.width + marginWidth)
                         } else {
-                            width += size.width
+                            width += size.width + marginWidth
                         }
                     } else {
                         width = UIViewNoIntrinsicMetric
@@ -874,18 +838,25 @@ class CCFlexbox: UIView {
                 }
             }
             if height != UIViewNoIntrinsicMetric {
+                var marginHeight:CGFloat = 0
+                if margin.top != MarginAuto {
+                    marginHeight += margin.top
+                }
+                if margin.bottom != MarginAuto {
+                    marginHeight += margin.bottom
+                }
                 if basis.height > 0 {
                     if vertical {
-                        height += basis.height
+                        height += basis.height + marginHeight
                     } else {
-                        height = max(height, basis.height)
+                        height = max(height, basis.height + marginHeight)
                     }
                 } else {
                     if size.height != UIViewNoIntrinsicMetric {
                         if vertical {
-                            height += size.height
+                            height += size.height + marginHeight
                         } else {
-                            height = max(height, size.height)
+                            height = max(height, size.height + marginHeight)
                         }
                     } else {
                         height = UIViewNoIntrinsicMetric

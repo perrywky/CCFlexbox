@@ -32,22 +32,24 @@ class Component: NSObject {
 
         let label3 = UILabel.init()
         label3.font = UIFont.systemFontOfSize(15)
-//        label3.backgroundColor = UIColor.lightGrayColor()
+        label3.backgroundColor = UIColor.lightGrayColor()
         label3.text = "再见"
 
         let bundle = NSBundle.init(forClass: self.classForCoder)
         let img = UIImage.init(named: "wifi.jpg", inBundle: bundle, compatibleWithTraitCollection: nil)
         let imgV = UIImageView.init(image: img)
 
-        return CCFlexbox.row(
-            CCFlexbox.row(
-                imgV.flexBasis(CGSizeMake(40, 40)),
-                CCFlexbox.column(
-                    label1,
-                    label2
-                )
-            ),
-            label3
-        ).justifyContent(.SpaceBetween).alignItems(.Center)
+        let column = CCFlexbox.column(
+            label1.ccLeft(20).ccRight(20),
+            label2.ccLeft(20)
+        )
+        column.backgroundColor = UIColor.lightGrayColor()
+
+        let box = CCFlexbox.row(
+            imgV.flexBasis(40, 40).ccLeft(8).ccRight(8).flexShrink(0).alignSelf(.Center),
+            column.justifyContent(.SpaceAround).alignSelf(.Stretch).flexShrink(0),
+            label3.ccLeft(10).flexBasis(200, 20).ccRight(8).flexShrink(0).ccTop(20).ccBottom(20)
+        ).justifyContent(.FlexStart)
+        return box
     }
 }

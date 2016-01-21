@@ -17,14 +17,25 @@ class TestComponent: UIView {
 
         let component:Component = Component.init()
         let view:UIView = component.render()
-        view.frame = CGRectMake(0, 0, 320, 320)
-        view.layer.borderColor = UIColor.blueColor().CGColor
-        view.layer.borderWidth = 0.5
         addSubview(view)
+        view.snp_makeConstraints { (make) -> Void in
+            make.edges.equalTo(self)
+        }
+
+        self.layer.borderWidth = 0.5
     }
 
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
+
+        let component:Component = Component.init()
+        let view:UIView = component.render()
+        addSubview(view)
+        view.snp_makeConstraints { (make) -> Void in
+            make.edges.equalTo(self)
+        }
+
+        self.layer.borderWidth = 0.5
     }
 
 }
