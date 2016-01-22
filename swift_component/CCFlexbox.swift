@@ -83,6 +83,14 @@ public extension UIView {
         ccMargin(margin)
         return self
     }
+
+    func ccLeftAuto() -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        margin.left = MarginAuto
+        ccMargin(margin)
+        return self
+    }
 }
 
 @objc public enum JustifyContent: Int{
@@ -254,7 +262,7 @@ private let spaceTag:Int = 1
                 let shrink = getFlexShrinkForItem(item)
                 shrinks += shrink
                 let basis = getFlexBasisForItem(item)
-                if basis.height > 0 {
+                if basis.height != UIViewNoIntrinsicMetric {
                     contentHeight += basis.height
                     if shrink > 0 {
                         shrinkTotal += basis.height*CGFloat(shrink)
@@ -418,7 +426,7 @@ private let spaceTag:Int = 1
                 let shrink = getFlexShrinkForItem(item)
                 shrinks += shrink
                 let basis = getFlexBasisForItem(item)
-                if basis.width > 0 {
+                if basis.width != UIViewNoIntrinsicMetric {
                     contentWidth += basis.width
                     if shrink > 0 {
                         shrinkTotal += basis.width*CGFloat(shrink)
@@ -628,7 +636,7 @@ private let spaceTag:Int = 1
         let grow = getFlexGrowForItem(item)
         let shrink = getFlexShrinkForItem(item)
         item.snp_makeConstraints(closure: { (make) -> Void in
-            if basis.width > 0 {
+            if basis.width != UIViewNoIntrinsicMetric {
                 if sizePerGrow > 0 {
                     make.width.equalTo(basis.width + CGFloat(grow) * sizePerGrow).priority(basisPriority)
                 } else {
@@ -700,7 +708,7 @@ private let spaceTag:Int = 1
             }
             if align != .Stretch && align != .Auto {
                 let basis = getFlexBasisForItem(item)
-                if basis.height > 0 {
+                if basis.height != UIViewNoIntrinsicMetric {
                     make.height.equalTo(basis.height).priority(basisPriority)
                 } else {
                     let size = item.intrinsicContentSize()
@@ -720,7 +728,7 @@ private let spaceTag:Int = 1
         let grow = getFlexGrowForItem(item)
         let shrink = getFlexShrinkForItem(item)
         item.snp_makeConstraints(closure: { (make) -> Void in
-            if basis.height > 0 {
+            if basis.height != UIViewNoIntrinsicMetric {
                 if sizePerGrow > 0 {
                     make.height.equalTo(basis.height + CGFloat(grow) * sizePerGrow).priority(basisPriority)
                 } else {
@@ -789,7 +797,7 @@ private let spaceTag:Int = 1
             }
             if align != .Stretch && align != .Auto {
                 let basis = getFlexBasisForItem(item)
-                if basis.width > 0 {
+                if basis.width != UIViewNoIntrinsicMetric {
                     make.width.equalTo(basis.width).priority(basisPriority)
                 } else {
                     let size = item.intrinsicContentSize()
@@ -819,7 +827,7 @@ private let spaceTag:Int = 1
                 if margin.right != MarginAuto {
                     marginWidth += margin.right
                 }
-                if basis.width > 0 {
+                if basis.width != UIViewNoIntrinsicMetric {
                     if vertical {
                         width = max(width, basis.width + marginWidth)
                     } else {
@@ -845,7 +853,7 @@ private let spaceTag:Int = 1
                 if margin.bottom != MarginAuto {
                     marginHeight += margin.bottom
                 }
-                if basis.height > 0 {
+                if basis.height != UIViewNoIntrinsicMetric {
                     if vertical {
                         height += basis.height + marginHeight
                     } else {
