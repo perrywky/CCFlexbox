@@ -16,7 +16,6 @@
 		C2AA91071C315F0C006F6630 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C2AA91051C315F0C006F6630 /* LaunchScreen.storyboard */; };
 		C2AA91121C315F0C006F6630 /* swift_componentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2AA91111C315F0C006F6630 /* swift_componentTests.swift */; };
 		C2AA911D1C315F0C006F6630 /* swift_componentUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2AA911C1C315F0C006F6630 /* swift_componentUITests.swift */; };
-		C2AA912B1C315FB8006F6630 /* Component.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2AA912A1C315FB8006F6630 /* Component.swift */; };
 		C2AA91311C31739B006F6630 /* TestComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2AA91301C31739B006F6630 /* TestComponent.swift */; };
 		C2AA91351C318438006F6630 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C2AA91341C318438006F6630 /* Media.xcassets */; };
 		C2AA91461C322C5D006F6630 /* Constraint.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2AA91371C322C5D006F6630 /* Constraint.swift */; };
@@ -69,7 +68,6 @@
 		C2AA91181C315F0C006F6630 /* swift_componentUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = swift_componentUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2AA911C1C315F0C006F6630 /* swift_componentUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = swift_componentUITests.swift; sourceTree = "<group>"; };
 		C2AA911E1C315F0C006F6630 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C2AA912A1C315FB8006F6630 /* Component.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Component.swift; sourceTree = "<group>"; };
 		C2AA91301C31739B006F6630 /* TestComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestComponent.swift; sourceTree = "<group>"; };
 		C2AA91341C318438006F6630 /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
 		C2AA91371C322C5D006F6630 /* Constraint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constraint.swift; sourceTree = "<group>"; };
@@ -147,7 +145,6 @@
 				C2AA91051C315F0C006F6630 /* LaunchScreen.storyboard */,
 				C2AA91081C315F0C006F6630 /* Info.plist */,
 				C2AA91541C322F42006F6630 /* wifi.jpg */,
-				C2AA912A1C315FB8006F6630 /* Component.swift */,
 				C2AA91301C31739B006F6630 /* TestComponent.swift */,
 				C2AA91341C318438006F6630 /* Media.xcassets */,
 				C207C2691C341F9D00D9D49C /* CCFlexbox.swift */,
@@ -340,7 +337,6 @@
 				C2AA91471C322C5D006F6630 /* ConstraintAttributes.swift in Sources */,
 				C2AA90FF1C315F0C006F6630 /* DetailViewController.swift in Sources */,
 				C2AA91501C322C5D006F6630 /* SnapKit.swift in Sources */,
-				C2AA912B1C315FB8006F6630 /* Component.swift in Sources */,
 				C2AA91511C322C5D006F6630 /* SourceLocation.swift in Sources */,
 				C2AA90FD1C315F0C006F6630 /* MasterViewController.swift in Sources */,
 				C2AA90FB1C315F0C006F6630 /* AppDelegate.swift in Sources */,
