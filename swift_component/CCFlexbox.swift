@@ -37,6 +37,12 @@ public extension UIView {
         return self
     }
 
+    func flexFixSize(width:CGFloat, height:CGFloat) -> UIView {
+        objc_setAssociatedObject(self, &FlexboxAssociatedKeys.flexBasis, NSValue.init(CGSize: CGSizeMake(width, height)), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        flexShrink(0)
+        return self
+    }
+
     func flexGrow(grow:Int) -> UIView {
         objc_setAssociatedObject(self, &FlexboxAssociatedKeys.flexGrow, NSNumber.init(long: grow), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         return self
@@ -128,6 +134,21 @@ private let spaceTag:Int = 1
     private var alignItems: AlignItems
     private var oldSize:CGSize
     private var ruler:UIView
+    private var baseline:UIView
+
+    override public var viewForFirstBaselineLayout: UIView {
+        get {
+            baseline.frame = CGRectMake(0, 0, 0, self.bounds.height * 0.8)
+            return baseline
+        }
+    }
+
+    override public var viewForLastBaselineLayout: UIView {
+        get {
+            baseline.frame = CGRectMake(0, 0, 0, self.bounds.height * 0.8)
+            return baseline
+        }
+    }
 
     private init(items: [UIView]) {
         self.items = items
@@ -138,10 +159,12 @@ private let spaceTag:Int = 1
         self.alignItems = .Stretch
         self.oldSize = CGSizeZero
         self.ruler = UIView.init()
+        self.baseline = UIView.init()
         super.init(frame: CGRectZero)
         for item in items {
             self.addSubview(item)
         }
+        self.addSubview(baseline)
     }
 
     required public init?(coder aDecoder: NSCoder) {
@@ -153,7 +176,9 @@ private let spaceTag:Int = 1
         self.alignItems = .Stretch
         self.oldSize = CGSizeZero
         self.ruler = UIView.init()
+        self.baseline = UIView.init()
         super.init(coder: aDecoder)
+        self.addSubview(baseline)
     }
 
     public class func row(items: UIView...) -> CCFlexbox {
@@ -976,5 +1001,14 @@ private let spaceTag:Int = 1
             }
         }
         return CGSizeMake(width, height)
+    }
+
+    override public func viewForBaselineLayout() -> UIView {
+        if vertical {
+            return self
+        } else {
+            baseline.frame = CGRectMake(0, 0, 0, self.bounds.height * 0.8)
+            return baseline
+        }
     }
 }
