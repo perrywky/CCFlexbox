@@ -124,18 +124,20 @@ class TestComponent: UIView {
             label1,
             label2
         )
-        column.backgroundColor = UIColor.lightGrayColor()
+//        column.backgroundColor = UIColor.lightGrayColor()
 
-        let box = CCFlexbox.column(
-            view1.flexBasis(40, 40).ccTop(8),
-            column.ccTop(8),
+        let box = CCFlexbox.row(
+            imgV.flexBasis(40, 40).ccLeft(5),
+//            view2.flexBasis(40, 40).ccLeft(8).flexGrow(2)
+            label1.ccLeft(5).ccRight(5)
+//            column.ccTop(8),
 //            label1.flexShrink(2),
 //            label2.ccLeft(5).ccRight(5),
 //            label3.ccLeft(MarginAuto)
 //            label1.ccLeft(0).flexBasis(200, 20).flexShrink(0),
 //            label2.ccLeft(0),
-            label3.ccLeft(0).ccTop(8).ccBottom(8)
-        ).justifyContent(.SpaceSeperate).alignItems(.Center)
+//            label3.ccLeft(0).ccTop(8).ccBottom(8)
+        ).justifyContent(.FlexStart).alignItems(.Center)
 
         addSubview(box)
         box.snp_makeConstraints { (make) -> Void in

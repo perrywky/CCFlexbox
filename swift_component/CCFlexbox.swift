@@ -37,12 +37,6 @@ public extension UIView {
         return self
     }
 
-    func flexFixSize(width:CGFloat, height:CGFloat) -> UIView {
-        objc_setAssociatedObject(self, &FlexboxAssociatedKeys.flexBasis, NSValue.init(CGSize: CGSizeMake(width, height)), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        flexShrink(0)
-        return self
-    }
-
     func flexGrow(grow:Int) -> UIView {
         objc_setAssociatedObject(self, &FlexboxAssociatedKeys.flexGrow, NSNumber.init(long: grow), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         return self
@@ -110,6 +104,14 @@ public extension UIView {
         ccMargin(margin)
         return self
     }
+
+    func ccRightAuto() -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        margin.right = MarginAuto
+        ccMargin(margin)
+        return self
+    }
 }
 
 @objc public enum JustifyContent: Int{
@@ -138,14 +140,12 @@ private let spaceTag:Int = 1
 
     override public var viewForFirstBaselineLayout: UIView {
         get {
-            baseline.frame = CGRectMake(0, 0, 0, self.bounds.height * 0.8)
             return baseline
         }
     }
 
     override public var viewForLastBaselineLayout: UIView {
         get {
-            baseline.frame = CGRectMake(0, 0, 0, self.bounds.height * 0.8)
             return baseline
         }
     }
@@ -165,6 +165,10 @@ private let spaceTag:Int = 1
             self.addSubview(item)
         }
         self.addSubview(baseline)
+        baseline.snp_makeConstraints { (make) -> Void in
+            make.left.top.width.equalTo(0)
+            make.height.equalTo(self).multipliedBy(0.8)
+        }
     }
 
     required public init?(coder aDecoder: NSCoder) {
@@ -179,6 +183,10 @@ private let spaceTag:Int = 1
         self.baseline = UIView.init()
         super.init(coder: aDecoder)
         self.addSubview(baseline)
+        baseline.snp_makeConstraints { (make) -> Void in
+            make.left.top.width.equalTo(0)
+            make.height.equalTo(self).multipliedBy(0.8)
+        }
     }
 
     public class func row(items: UIView...) -> CCFlexbox {
@@ -285,11 +293,12 @@ private let spaceTag:Int = 1
     }
 
     override public func updateConstraints() {
-        if CGSizeEqualToSize(self.bounds.size, CGSizeZero) {
-            super.updateConstraints()
-            return
-        }
         if vertical {
+            if CGSizeEqualToSize(self.bounds.size, CGSizeZero) {
+                super.updateConstraints()
+                return
+            }
+
             let boundHeight = self.bounds.size.height
             var contentHeight:CGFloat = 0
             var grows = 0
@@ -484,51 +493,16 @@ private let spaceTag:Int = 1
 
         } else {
 
-            let boundWidth = self.bounds.size.width
-            var contentWidth:CGFloat = 0
             var grows = 0
-            var shrinks = 0
-            var shrinkTotal:CGFloat = 0
-            var shrinkableWidth:CGFloat = 0
             for item in items {
                 let grow = getFlexGrowForItem(item)
                 grows += grow
-                let shrink = getFlexShrinkForItem(item)
-                shrinks += shrink
-                let basis = getFlexBasisForItem(item)
-                if basis.width != UIViewNoIntrinsicMetric {
-                    contentWidth += basis.width
-                    if shrink > 0 {
-                        shrinkTotal += basis.width*CGFloat(shrink)
-                        shrinkableWidth += basis.width
-                    }
-                } else {
-                    let size = item.intrinsicContentSize()
-                    if size.width != UIViewNoIntrinsicMetric {
-                        contentWidth += size.width
-
-                        if shrink > 0 {
-                            shrinkTotal += size.width*CGFloat(shrink)
-                            shrinkableWidth += size.width
-                        }
-                    }
-                }
-                let margins = getMarginForItem(item)
-                if margins.left != MarginAuto {
-                    contentWidth += margins.left
-                }
-                if margins.right != MarginAuto {
-                    contentWidth += margins.right
-                }
             }
-
-            let sizePerGrow = grows > 0 ? (boundWidth - contentWidth) / CGFloat( grows) : 0
-            let shrinkPercent = (contentWidth - boundWidth) / shrinkTotal
 
             var autoMargins:[UIView] = []
             for var index = 0; index < items.count; index++ {
                 let item = items[index]
-                self.setWidthConstraintForItem(item, sizePerGrow: sizePerGrow, shrinkPercent: shrinkPercent)
+                self.setWidthConstraintForItem(item)
                 self.setVerticalAlignConstraintForItem(item, defaultAlign: alignItems)
 
                 let margins = self.getMarginForItem(item)
@@ -552,146 +526,167 @@ private let spaceTag:Int = 1
             if autoMargins.count > 0 {
                 let firstMargin = autoMargins.first!
                 firstMargin.snp_updateConstraints(closure: { (make) -> Void in
-                    make.width.greaterThanOrEqualTo(0)
+                    if grows > 0 {
+                        make.width.equalTo(0)
+                    } else {
+                        make.width.greaterThanOrEqualTo(0)
+                    }
                     for margin in autoMargins[1..<autoMargins.count] {
                         make.width.equalTo(margin)
                     }
                 })
             }
 
-            switch justifyContent {
-            case .FlexStart:
+            if grows > 0 {
                 let firstSpace = self.blanks.first!
                 firstSpace.snp_updateConstraints(closure: { (make) -> Void in
                     make.left.equalTo(0)
-                    make.width.equalTo(0)
                 })
                 let lastSpace = self.blanks.last!
                 lastSpace.snp_updateConstraints(closure: { (make) -> Void in
                     make.right.equalTo(0)
-                    //0 if any auto margin, otherwise > 0
-                    make.width.greaterThanOrEqualTo(0).priorityHigh()
-                    make.width.lessThanOrEqualTo(0).priorityLow()
                 })
-                for var index = 1; index < blanks.count - 1; index++ {
+                for var index = 0; index < blanks.count; index++ {
                     let space = blanks[index]
                     space.snp_updateConstraints(closure: { (make) -> Void in
                         make.width.equalTo(0)
                     })
                 }
-                break
-            case .FlexEnd:
-                let lastSpace = self.blanks.last!
-                lastSpace.snp_updateConstraints(closure: { (make) -> Void in
-                    make.right.equalTo(0)
-                    make.width.equalTo(0)
-                })
-                let firstSpace = self.blanks.first!
-                firstSpace.snp_updateConstraints(closure: { (make) -> Void in
-                    make.left.equalTo(0)
-                    //0 if any auto margin, otherwise > 0
-                    make.width.greaterThanOrEqualTo(0).priorityHigh()
-                    make.width.lessThanOrEqualTo(0).priorityLow()
-                })
-                for var index = 1; index < blanks.count - 1; index++ {
-                    let space = blanks[index]
-                    space.snp_updateConstraints(closure: { (make) -> Void in
+            } else {
+                switch justifyContent {
+                case .FlexStart:
+                    let firstSpace = self.blanks.first!
+                    firstSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.left.equalTo(0)
                         make.width.equalTo(0)
                     })
-                }
-                break
-            case .Center:
-                let firstSpace = self.blanks.first!
-                firstSpace.snp_updateConstraints(closure: { (make) -> Void in
-                    make.left.equalTo(0)
-                    //0 if any auto margin, otherwise > 0
-                    make.width.greaterThanOrEqualTo(0).priorityHigh()
-                    make.width.lessThanOrEqualTo(0).priorityLow()
-                })
-                let lastSpace = self.blanks.last!
-                lastSpace.snp_updateConstraints(closure: { (make) -> Void in
-                    make.right.equalTo(0)
-                    make.width.equalTo(firstSpace)
-                })
-                for var index = 1; index < blanks.count - 1; index++ {
-                    let space = blanks[index]
-                    space.snp_updateConstraints(closure: { (make) -> Void in
+                    let lastSpace = self.blanks.last!
+                    lastSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.right.equalTo(0)
+                        //0 if any auto margin, otherwise > 0
+                        make.width.greaterThanOrEqualTo(0)
+                        make.width.lessThanOrEqualTo(0).priority(249) // prevent uilabel contentHugging
+                    })
+                    for var index = 1; index < blanks.count - 1; index++ {
+                        let space = blanks[index]
+                        space.snp_updateConstraints(closure: { (make) -> Void in
+                            make.width.equalTo(0)
+                        })
+                    }
+                    break
+                case .FlexEnd:
+                    let lastSpace = self.blanks.last!
+                    lastSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.right.equalTo(0)
                         make.width.equalTo(0)
                     })
+                    let firstSpace = self.blanks.first!
+                    firstSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.left.equalTo(0)
+                        //0 if any auto margin, otherwise > 0
+                        make.width.greaterThanOrEqualTo(0)
+                        make.width.lessThanOrEqualTo(0).priority(249) // prevent uilabel contentHugging
+                    })
+                    for var index = 1; index < blanks.count - 1; index++ {
+                        let space = blanks[index]
+                        space.snp_updateConstraints(closure: { (make) -> Void in
+                            make.width.equalTo(0)
+                        })
+                    }
+                    break
+                case .Center:
+                    let firstSpace = self.blanks.first!
+                    firstSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.left.equalTo(0)
+                        //0 if any auto margin, otherwise > 0
+                        make.width.greaterThanOrEqualTo(0)
+                        make.width.lessThanOrEqualTo(0).priority(249) // prevent uilabel contentHugging
+                    })
+                    let lastSpace = self.blanks.last!
+                    lastSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.right.equalTo(0)
+                        make.width.equalTo(firstSpace)
+                    })
+                    for var index = 1; index < blanks.count - 1; index++ {
+                        let space = blanks[index]
+                        space.snp_updateConstraints(closure: { (make) -> Void in
+                            make.width.equalTo(0)
+                        })
+                    }
+    //                ruler.snp_remakeConstraints(closure: { (make) -> Void in
+    //                    make.left.equalTo(firstSpace)
+    //                    make.right.equalTo(lastSpace)
+    //                    make.centerX.equalTo(0)
+    //                    make.height.equalTo(0)
+    //                })
+                    break
+                case .SpaceBetween:
+                    let firstSpace = self.blanks.first!
+                    firstSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.left.equalTo(0)
+                        make.width.equalTo(0)
+                    })
+                    let lastSpace = self.blanks.last!
+                    lastSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.width.equalTo(0)
+                        make.right.equalTo(0)
+                    })
+                    let secondSpace = blanks[1]
+                    secondSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        //0 if any auto margin, otherwise > 0
+                        make.width.greaterThanOrEqualTo(0)
+                        make.width.lessThanOrEqualTo(0).priority(249) // prevent uilabel contentHugging
+                        for nextSpace in blanks[2..<blanks.count-1] {
+                            make.width.equalTo(nextSpace)
+                        }
+                    })
+                    break
+                case .SpaceAround:
+                    let firstSpace = self.blanks.first!
+                    let lastSpace = self.blanks.last!
+                    firstSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.left.equalTo(0)
+                        //0 if any auto margin, otherwise > 0
+                        make.width.greaterThanOrEqualTo(0)
+                        make.width.lessThanOrEqualTo(0).priority(249) // prevent uilabel contentHugging
+                        for nextSpace in blanks[1..<blanks.count] {
+                            make.width.equalTo(nextSpace)
+                        }
+                    })
+                    lastSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.right.equalTo(0)
+                    })
+    //                ruler.snp_remakeConstraints(closure: { (make) -> Void in
+    //                    make.left.equalTo(firstSpace)
+    //                    make.right.equalTo(lastSpace)
+    //                    make.centerX.equalTo(0) //center x aligning
+    //                    make.height.equalTo(0)
+    //                })
+                    break
+                case .SpaceSeperate:
+                    let firstSpace = self.blanks.first!
+                    let lastSpace = self.blanks.last!
+                    firstSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.left.equalTo(0)
+                        //0 if any auto margin, otherwise > 0
+                        make.width.greaterThanOrEqualTo(0)
+                        make.width.lessThanOrEqualTo(0).priority(249) // prevent uilabel contentHugging
+                        for nextSpace in blanks[1..<blanks.count-1] {
+                            make.width.equalTo(nextSpace).multipliedBy(2)
+                        }
+                    })
+                    lastSpace.snp_updateConstraints(closure: { (make) -> Void in
+                        make.right.equalTo(0)
+                        make.width.equalTo(firstSpace)
+                    })
+    //                ruler.snp_remakeConstraints(closure: { (make) -> Void in
+    //                    make.left.equalTo(firstSpace)
+    //                    make.right.equalTo(lastSpace)
+    //                    make.centerX.equalTo(0) //center x aligning
+    //                    make.height.equalTo(0)
+    //                })
+                    break
                 }
-//                ruler.snp_remakeConstraints(closure: { (make) -> Void in
-//                    make.left.equalTo(firstSpace)
-//                    make.right.equalTo(lastSpace)
-//                    make.centerX.equalTo(0)
-//                    make.height.equalTo(0)
-//                })
-                break
-            case .SpaceBetween:
-                let firstSpace = self.blanks.first!
-                firstSpace.snp_updateConstraints(closure: { (make) -> Void in
-                    make.left.equalTo(0)
-                    make.width.equalTo(0)
-                })
-                let lastSpace = self.blanks.last!
-                lastSpace.snp_updateConstraints(closure: { (make) -> Void in
-                    make.width.equalTo(0)
-                    make.right.equalTo(0)
-                })
-                let secondSpace = blanks[1]
-                secondSpace.snp_updateConstraints(closure: { (make) -> Void in
-                    //0 if any auto margin, otherwise > 0
-                    make.width.greaterThanOrEqualTo(0).priorityHigh()
-                    make.width.lessThanOrEqualTo(0).priorityLow()
-                    for nextSpace in blanks[2..<blanks.count-1] {
-                        make.width.equalTo(nextSpace)
-                    }
-                })
-                break
-            case .SpaceAround:
-                let firstSpace = self.blanks.first!
-                let lastSpace = self.blanks.last!
-                firstSpace.snp_updateConstraints(closure: { (make) -> Void in
-                    make.left.equalTo(0)
-                    //0 if any auto margin, otherwise > 0
-                    make.width.greaterThanOrEqualTo(0).priorityHigh()
-                    make.width.lessThanOrEqualTo(0).priorityLow()
-                    for nextSpace in blanks[1..<blanks.count] {
-                        make.width.equalTo(nextSpace)
-                    }
-                })
-                lastSpace.snp_updateConstraints(closure: { (make) -> Void in
-                    make.right.equalTo(0)
-                })
-//                ruler.snp_remakeConstraints(closure: { (make) -> Void in
-//                    make.left.equalTo(firstSpace)
-//                    make.right.equalTo(lastSpace)
-//                    make.centerX.equalTo(0) //center x aligning
-//                    make.height.equalTo(0)
-//                })
-                break
-            case .SpaceSeperate:
-                let firstSpace = self.blanks.first!
-                let lastSpace = self.blanks.last!
-                firstSpace.snp_updateConstraints(closure: { (make) -> Void in
-                    make.left.equalTo(0)
-                    //0 if any auto margin, otherwise > 0
-                    make.width.greaterThanOrEqualTo(0).priorityHigh()
-                    make.width.lessThanOrEqualTo(0).priorityLow()
-                    for nextSpace in blanks[1..<blanks.count-1] {
-                        make.width.equalTo(nextSpace).multipliedBy(2)
-                    }
-                })
-                lastSpace.snp_updateConstraints(closure: { (make) -> Void in
-                    make.right.equalTo(0)
-                    make.width.equalTo(firstSpace)
-                })
-//                ruler.snp_remakeConstraints(closure: { (make) -> Void in
-//                    make.left.equalTo(firstSpace)
-//                    make.right.equalTo(lastSpace)
-//                    make.centerX.equalTo(0) //center x aligning
-//                    make.height.equalTo(0)
-//                })
-                break
             }
         }
 
@@ -718,7 +713,7 @@ private let spaceTag:Int = 1
 
     private func getFlexShrinkForItem(item:UIView) -> Int {
         let shrinkValue = objc_getAssociatedObject(item, &FlexboxAssociatedKeys.flexShrink)
-        return shrinkValue == nil ? 1 : shrinkValue.integerValue
+        return shrinkValue == nil ? 0 : shrinkValue.integerValue
     }
 
     private func getAlignSelfForItem(item:UIView) -> AlignItems {
@@ -749,48 +744,21 @@ private let spaceTag:Int = 1
         return CGSizeMake(width, height)
     }
 
-    private func setWidthConstraintForItem(item:UIView, sizePerGrow:CGFloat, shrinkPercent:CGFloat) -> Void {
+    private func setWidthConstraintForItem(item:UIView) -> Void {
         let basis = getFlexBasisForItem(item)
-        let grow = getFlexGrowForItem(item)
-        let shrink = getFlexShrinkForItem(item)
+        let grow = max(getFlexGrowForItem(item), 0)
+        let shrink = max(getFlexShrinkForItem(item), 0)
         item.snp_updateConstraints(closure: { (make) -> Void in
             if basis.width != UIViewNoIntrinsicMetric {
-                if sizePerGrow > 0 {
-                    make.width.equalTo(basis.width + CGFloat(grow) * sizePerGrow).priority(basisPriority)
-                } else {
-                    if shrink > 0 && shrinkPercent > 0 {
-                        make.width.equalTo(max(basis.width * (1 - shrinkPercent * CGFloat(shrink)), 0)).priority(basisPriority)
-                    } else {
-                        make.width.equalTo(basis.width).priority(basisPriority)
-                    }
-                }
+                make.width.greaterThanOrEqualTo(basis.width).priority(750 - shrink) //ContentCompressionResistance
+                make.width.lessThanOrEqualTo(basis.width).priority(250 - grow) //ContentHugging
+
+                //incase content size is bigger
+                item.setContentCompressionResistancePriority(1, forAxis: .Horizontal) //disable ContentCompressionResistance
+                item.setContentHuggingPriority(1, forAxis: .Horizontal) //disable ContentHugging
             } else {
-                let size = item.intrinsicContentSize()
-                if size.width != UIViewNoIntrinsicMetric {
-                    if sizePerGrow > 0 {
-                        make.width.equalTo(size.width + CGFloat(grow) * sizePerGrow).priority(basisPriority)
-                    } else {
-                        if shrink > 0 && shrinkPercent > 0 {
-                            item.setContentCompressionResistancePriority(Float(750-shrink), forAxis: .Horizontal) //no shrinking
-                            item.setContentHuggingPriority(251, forAxis: .Horizontal)
-//                            make.width.equalTo(max(size.width * (1 - shrinkPercent * CGFloat(shrink)), 0)).priority(basisPriority)
-                        } else {
-                            item.setContentHuggingPriority(251, forAxis: .Horizontal)
-                            item.setContentCompressionResistancePriority(basisPriority, forAxis: .Horizontal) //no shrinking
-                        }
-                    }
-                } else {
-                    if sizePerGrow > 0 {
-                        item.setContentHuggingPriority(249, forAxis: .Horizontal)
-                        item.setContentCompressionResistancePriority(basisPriority, forAxis: .Horizontal) //no shrinking
-                    } else if(shrink > 0 && shrinkPercent > 0) {
-                        item.setContentHuggingPriority(251, forAxis: .Horizontal)
-                        item.setContentCompressionResistancePriority(basisPriority - 2, forAxis: .Horizontal) //shrinking
-                    } else {
-                        item.setContentHuggingPriority(251, forAxis: .Horizontal)
-                        item.setContentCompressionResistancePriority(basisPriority, forAxis: .Horizontal) //no shrinking
-                    }
-                }
+                item.setContentCompressionResistancePriority(Float(750 - shrink), forAxis: .Horizontal) //no shrinking
+                item.setContentHuggingPriority(Float(250 - grow), forAxis: .Horizontal)
             }
         })
     }
@@ -824,7 +792,7 @@ private let spaceTag:Int = 1
                 make.baseline.equalTo(self)
                 break;
             case .Stretch, .Auto:
-                make.top.bottom.equalTo(self).inset(EdgeInsetsMake(margin.top, left: 0, bottom: margin.bottom, right: 0))
+                make.top.bottom.equalTo(self).inset(margin)
                 break;
             }
             if align != .Stretch && align != .Auto {
@@ -926,17 +894,10 @@ private let spaceTag:Int = 1
                 let basis = getFlexBasisForItem(item)
                 if basis.width != UIViewNoIntrinsicMetric {
                     make.width.equalTo(basis.width).priority(basisPriority)
-                } else {
-                    let size = item.intrinsicContentSize()
-                    if size.width != UIViewNoIntrinsicMetric {
-                        item.setContentHuggingPriority(251, forAxis: .Horizontal)
-                        item.setContentCompressionResistancePriority(basisPriority, forAxis: .Horizontal) //no shrinking
-                    } else {
-                        item.setContentHuggingPriority(251, forAxis: .Horizontal)
-                        item.setContentCompressionResistancePriority(basisPriority, forAxis: .Horizontal) //no shrinking
-                    }
                 }
             }
+            item.setContentHuggingPriority(1, forAxis: .Horizontal)
+            item.setContentCompressionResistancePriority(1, forAxis: .Horizontal) //no shrinking
         })
     }
 
@@ -1004,11 +965,6 @@ private let spaceTag:Int = 1
     }
 
     override public func viewForBaselineLayout() -> UIView {
-        if vertical {
-            return self
-        } else {
-            baseline.frame = CGRectMake(0, 0, 0, self.bounds.height * 0.8)
-            return baseline
-        }
+        return baseline
     }
 }
