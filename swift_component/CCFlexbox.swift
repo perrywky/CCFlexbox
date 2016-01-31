@@ -686,24 +686,6 @@ public extension UIView {
         return marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
     }
 
-    private func getItemSize(item:UIView) -> CGSize {
-        var width:CGFloat = 0
-        var height:CGFloat = 0
-        let size = getFlexBasisForItem(item)
-        let content = item.intrinsicContentSize()
-        if size.width != UIViewNoIntrinsicMetric {
-            width = size.width
-        } else if content.width != UIViewNoIntrinsicMetric {
-            width = content.width
-        }
-        if size.height != UIViewNoIntrinsicMetric {
-            height = size.height
-        } else if content.height != UIViewNoIntrinsicMetric {
-            height = content.height
-        }
-        return CGSizeMake(width, height)
-    }
-
     private func setWidthConstraintForItem(item:UIView) -> Void {
         let basis = getFlexBasisForItem(item)
         let grow = max(getFlexGrowForItem(item), 0)
@@ -756,7 +738,10 @@ public extension UIView {
             if align != .Stretch && align != .Auto {
                 let basis = getFlexBasisForItem(item)
                 if basis.height != UIViewNoIntrinsicMetric {
-                    make.height.equalTo(basis.height).priority(750)
+                    make.height.greaterThanOrEqualTo(basis.height).priority(750)
+                    make.height.lessThanOrEqualTo(basis.height).priority(250)
+                } else {
+                    make.height.lessThanOrEqualTo(self).offset(-margin.top-margin.bottom).priority(750)
                 }
             }
             item.setContentCompressionResistancePriority(1, forAxis: .Vertical) //incase content size is bigger
@@ -813,6 +798,9 @@ public extension UIView {
                 let basis = getFlexBasisForItem(item)
                 if basis.width != UIViewNoIntrinsicMetric {
                     make.width.greaterThanOrEqualTo(basis.width).priority(750)
+                    make.width.lessThanOrEqualTo(basis.width).priority(250)
+                } else {
+                    make.width.lessThanOrEqualTo(self).offset(-margin.left-margin.right).priority(750)
                 }
             }
             item.setContentCompressionResistancePriority(1, forAxis: .Horizontal) //incase content size is bigger

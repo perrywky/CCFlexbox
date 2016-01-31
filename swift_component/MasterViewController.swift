@@ -10,51 +10,13 @@ import UIKit
 
 class MasterViewController: UITableViewController {
 
-    var detailViewController: DetailViewController? = nil
-    var objects = [AnyObject]()
-
-
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-        self.navigationItem.leftBarButtonItem = self.editButtonItem()
-
-        let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "insertNewObject:")
-        self.navigationItem.rightBarButtonItem = addButton
-        if let split = self.splitViewController {
-            let controllers = split.viewControllers
-            self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
-        }
-    }
-
-    override func viewWillAppear(animated: Bool) {
-        self.clearsSelectionOnViewWillAppear = self.splitViewController!.collapsed
-        super.viewWillAppear(animated)
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-    }
-
-    func insertNewObject(sender: AnyObject) {
-        objects.insert(NSDate(), atIndex: 0)
-        let indexPath = NSIndexPath(forRow: 0, inSection: 0)
-        self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
-    }
-
-    // MARK: - Segues
-
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "showDetail" {
-            if let indexPath = self.tableView.indexPathForSelectedRow {
-                let object = objects[indexPath.row] as! NSDate
-                let controller = (segue.destinationViewController as! UINavigationController).topViewController as! DetailViewController
-                controller.detailItem = object
-                controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
-                controller.navigationItem.leftItemsSupplementBackButton = true
-            }
-        }
     }
 
     // MARK: - Table View
@@ -64,29 +26,161 @@ class MasterViewController: UITableViewController {
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return objects.count
+        return 12
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+        let cell = UITableViewCell.init()
+        cell.selectionStyle = .None
+        cell.textLabel!.text = ""
 
-        let object = objects[indexPath.row] as! NSDate
-        cell.textLabel!.text = object.description
-        return cell
-    }
+        if indexPath.row < 6 {
+            let justify = JustifyContent(rawValue: indexPath.row)!
+            let label = UILabel.init()
+            switch justify {
+            case .FlexStart:
+                label.text = "FlexStart"
+                break;
+            case .FlexEnd:
+                label.text = "FlexEnd"
+                break;
+            case .Center:
+                label.text = "Center"
+                break;
+            case .SpaceBetween:
+                label.text = "SpaceBetween"
+                break;
+            case .SpaceAround:
+                label.text = "SpaceAround"
+                break;
+            case .SpaceSeperate:
+                label.text = "SpaceSeperate"
+                break;
+            }
+            let img = UIImageView.init(image: UIImage.init(named: "wifi"))
+            img.flexBasis(40, 40)
+            let flexbox = CCFlexbox.row(img, label).justifyContent(justify)
+            cell.contentView.addSubview(flexbox)
+            flexbox.snp_makeConstraints { (make) -> Void in
+                make.edges.equalTo(cell.contentView)
+            }
+        } else if indexPath.row == 6 {
+            let label = UILabel.init()
+            label.backgroundColor = UIColor.lightGrayColor()
+            label.text = "FlexGrow(0)"
 
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
+            let label2 = UILabel.init()
+            label2.backgroundColor = UIColor.greenColor()
+            label2.text = "FlexGrow(1)"
+            label2.textAlignment = .Center
+            label2.flexGrow(1)
 
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            objects.removeAtIndex(indexPath.row)
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-        } else if editingStyle == .Insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
+            let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
+            cell.contentView.addSubview(flexbox)
+            flexbox.snp_makeConstraints { (make) -> Void in
+                make.edges.equalTo(cell.contentView)
+            }
+        } else if indexPath.row == 7 {
+            let label = UILabel.init()
+            label.backgroundColor = UIColor.lightGrayColor()
+            label.text = "FlexGrow(1)"
+            label.textAlignment = .Center
+            label.flexGrow(1)
+
+            let label2 = UILabel.init()
+            label2.backgroundColor = UIColor.greenColor()
+            label2.text = "FlexGrow(0)"
+            
+            let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
+            cell.contentView.addSubview(flexbox)
+            flexbox.snp_makeConstraints { (make) -> Void in
+                make.edges.equalTo(cell.contentView)
+            }
+        } else if indexPath.row == 8 {
+            let label = UILabel.init()
+            label.backgroundColor = UIColor.lightGrayColor()
+            label.text = "FlexShrink(1): Lorem ipsum"
+            label.flexShrink(1)
+
+            let label2 = UILabel.init()
+            label2.backgroundColor = UIColor.greenColor()
+            label2.text = "FlexShrink(0): Lorem ipsum"
+
+            let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
+            cell.contentView.addSubview(flexbox)
+            flexbox.snp_makeConstraints { (make) -> Void in
+                make.edges.equalTo(cell.contentView)
+            }
+        } else if indexPath.row == 9 {
+            let label = UILabel.init()
+            label.backgroundColor = UIColor.lightGrayColor()
+            label.text = "FlexBasis(200, 0)"
+            label.flexBasis(210, 0)
+
+            let label2 = UILabel.init()
+            label2.backgroundColor = UIColor.greenColor()
+            label2.text = "FlexShrink(0): Lorem ipsum"
+
+            let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
+            cell.contentView.addSubview(flexbox)
+            flexbox.snp_makeConstraints { (make) -> Void in
+                make.edges.equalTo(cell.contentView)
+            }
+        } else if indexPath.row == 10 {
+            let label = UILabel.init()
+            label.text = "ccLeft(10)"
+            label.backgroundColor = UIColor.lightGrayColor()
+            label.ccLeft(10)
+
+            let label2 = UILabel.init()
+            label2.backgroundColor = UIColor.greenColor()
+            label2.text = "ccLeft(20)"
+            label2.ccLeft(20)
+
+            let label3 = UILabel.init()
+            label3.text = "ccLeftAuto"
+            label3.backgroundColor = UIColor.lightGrayColor()
+            label3.ccLeftAuto()
+
+            let flexbox = CCFlexbox.row(label, label2, label3).justifyContent(.FlexStart)
+            cell.contentView.addSubview(flexbox)
+            flexbox.snp_makeConstraints { (make) -> Void in
+                make.edges.equalTo(cell.contentView)
+            }
+        } else if indexPath.row == 11 {
+            let label = UILabel.init()
+            label.text = "alignSelf(.FlexStart)"
+            label.backgroundColor = UIColor.lightGrayColor()
+            label.alignSelf(.FlexStart)
+
+            let label2 = UILabel.init()
+            label2.backgroundColor = UIColor.greenColor()
+            label2.text = "FlexEnd"
+            label2.alignSelf(.FlexEnd)
+
+            let label3 = UILabel.init()
+            label3.text = "Center"
+            label3.backgroundColor = UIColor.lightGrayColor()
+            label3.alignSelf(.Center)
+
+            let label4 = UILabel.init()
+            label4.text = "Baseline"
+            label4.backgroundColor = UIColor.greenColor()
+            label4.alignSelf(.Baseline)
+
+            let label5 = UILabel.init()
+            label5.text = "Stretch"
+            label5.backgroundColor = UIColor.lightGrayColor()
+            label5.alignSelf(.Stretch)
+
+            let flexbox = CCFlexbox.row(label, label2, label3, label4, label5).justifyContent(.FlexStart)
+            cell.contentView.addSubview(flexbox)
+            flexbox.snp_makeConstraints { (make) -> Void in
+                make.edges.equalTo(cell.contentView)
+            }
         }
+
+        return cell
     }
 
 
