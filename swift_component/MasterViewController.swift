@@ -487,9 +487,11 @@ class MasterViewController: UITableViewController {
 
             let label4 = UILabel.init()
             label4.text = "col3"
+            label4.font = UIFont.systemFontOfSize(16)
 
             let label5 = UILabel.init()
             label5.text = "col4"
+            label5.font = UIFont.systemFontOfSize(12)
 
             let column = CCFlexbox.column(label1, label2, CCFlexbox.row(label4, label5).alignItems(.Baseline)).justifyContent(.SpaceBetween).alignItems(.FlexStart)
 

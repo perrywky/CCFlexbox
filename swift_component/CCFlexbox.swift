@@ -159,7 +159,7 @@ public extension UIView {
     private var vertical: Bool = false
     private var justifyContent: JustifyContent = .FlexStart
     private var alignItems: AlignItems = .Auto
-    private var baseline:UIView = UIView.init()
+    private let baseline:UILabel = UILabel.init()
 
     private let spaceCrossSize:CGFloat = 0 //used for debug
     private var constraintIdentifier:String = NSUUID().UUIDString
@@ -171,11 +171,12 @@ public extension UIView {
             self.addSubview(item)
         }
         self.addSubview(baseline)
+        baseline.backgroundColor = UIColor.blackColor()
         baseline.translatesAutoresizingMaskIntoConstraints = false
         setFixedRelateConstraint(item: baseline, attribute: .Left)
         setFixedRelateConstraint(item: baseline, attribute: .Top)
         setFixedConstantConstraint(item: baseline, attribute: .Width, constant: spaceCrossSize)
-        setFixedRelateConstraint(item: baseline, attribute: .Height, constant: 0, relatedBy: .Equal, toItem: self, attribute: .Height, multiplier: 0.8)
+        setFixedRelateConstraint(item: baseline, attribute: .Height)
     }
 
     required public init?(coder aDecoder: NSCoder) {
@@ -382,7 +383,7 @@ public extension UIView {
                 setAlignConstraint(item: item, attribute: .CenterY)
                 break;
             case .Baseline:
-                setAlignConstraint(item: item, attribute: .Baseline)
+                setAlignConstraint(item: item, attribute: .Baseline, constant: 0, relatedBy: .Equal, toItem: baseline, attribute: .Baseline)
                 break;
             case .Stretch, .Auto:
                 setAlignConstraint(item: item, attribute: .Top, constant: margin.top)
@@ -394,7 +395,6 @@ public extension UIView {
                 setConstantHeightConstraint(item, constant: basis.height, .LessThanOrEqual, 750)
                 setConstantHeightConstraint(item, constant: basis.height, .Equal, 750)
             }
-            item.setContentCompressionResistancePriority(250, forAxis: .Vertical) //prevent content size grows bigger than self but also prevent space size (priority 249) eats content
 
             let leftMargin = self.margins[index * 2]
             clearWidthConstraints(leftMargin)
@@ -418,7 +418,6 @@ public extension UIView {
                 setConstantWidthConstraint(firstMargin, constant: 0)
             } else {
                 setConstantWidthConstraint(firstMargin, constant: 0, .GreaterThanOrEqual)
-                setConstantWidthConstraint(firstMargin, constant: 1, .GreaterThanOrEqual, 2)
             }
 
             for margin in autoMargins[1..<autoMargins.count] {
@@ -441,7 +440,6 @@ public extension UIView {
                 let lastSpace = self.blanks.last!
                 clearWidthConstraints(lastSpace)
                 setConstantWidthConstraint(lastSpace, constant: 0, .GreaterThanOrEqual)
-                setConstantWidthConstraint(lastSpace, constant: 1, .GreaterThanOrEqual, 1)
                 for var index = 1; index < blanks.count - 1; index++ {
                     let space = blanks[index]
                     clearWidthConstraints(space)
@@ -455,7 +453,6 @@ public extension UIView {
                 let firstSpace = self.blanks.first!
                 clearWidthConstraints(firstSpace)
                 setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                setConstantWidthConstraint(firstSpace, constant: 1, .GreaterThanOrEqual, 1)
                 for var index = 1; index < blanks.count - 1; index++ {
                     let space = blanks[index]
                     clearWidthConstraints(space)
@@ -466,7 +463,6 @@ public extension UIView {
                 let firstSpace = self.blanks.first!
                 clearWidthConstraints(firstSpace)
                 setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
-                setConstantWidthConstraint(firstSpace, constant: 1, .GreaterThanOrEqual, 1)
 
                 let lastSpace = self.blanks.last!
                 clearWidthConstraints(lastSpace)
@@ -490,7 +486,6 @@ public extension UIView {
                 let secondSpace = blanks[1]
                 clearWidthConstraints(secondSpace)
                 setConstantWidthConstraint(secondSpace, constant: 0, .GreaterThanOrEqual)
-                setConstantWidthConstraint(secondSpace, constant: 1, .GreaterThanOrEqual, 1)
                 for nextSpace in blanks[2..<blanks.count-1] {
                     clearWidthConstraints(nextSpace)
                     setRelateWidthConstraint(nextSpace, target: secondSpace)
@@ -500,7 +495,6 @@ public extension UIView {
                 let firstSpace = self.blanks.first!
                 clearWidthConstraints(firstSpace)
                 setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
-                setConstantWidthConstraint(firstSpace, constant: 1, .GreaterThanOrEqual, 1)  // force sibing's contentHugging
 
                 for nextSpace in blanks[1..<blanks.count] {
                     clearWidthConstraints(nextSpace)
@@ -511,7 +505,6 @@ public extension UIView {
                 let firstSpace = self.blanks.first!
                 clearWidthConstraints(firstSpace)
                 setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
-                setConstantWidthConstraint(firstSpace, constant: 1, .GreaterThanOrEqual, 1)  // force sibing's contentHugging
 
                 for nextSpace in blanks[1..<blanks.count-1] {
                     clearWidthConstraints(nextSpace)
@@ -585,7 +578,6 @@ public extension UIView {
                 setConstantWidthConstraint(item, constant: basis.width, .LessThanOrEqual, 750)
                 setConstantWidthConstraint(item, constant: basis.width, .Equal, 750)
             }
-            item.setContentCompressionResistancePriority(250, forAxis: .Horizontal) //prevent content size grows bigger than self but also prevent space size (priority 249) eats content
 
             let topMargin = self.margins[index * 2]
             clearWidthConstraints(topMargin)
@@ -608,7 +600,6 @@ public extension UIView {
                 setConstantHeightConstraint(firstMargin, constant: 0)
             } else {
                 setConstantHeightConstraint(firstMargin, constant: 0, .GreaterThanOrEqual)
-                setConstantHeightConstraint(firstMargin, constant: 1, .GreaterThanOrEqual, 2)
             }
 
             for margin in autoMargins[1..<autoMargins.count] {
@@ -631,7 +622,6 @@ public extension UIView {
                 let lastSpace = self.blanks.last!
                 clearWidthConstraints(lastSpace)
                 setConstantHeightConstraint(lastSpace, constant: 0, .GreaterThanOrEqual)
-                setConstantHeightConstraint(lastSpace, constant: 1, .GreaterThanOrEqual, 1) //force sibling's contentHugging
                 for var index = 1; index < blanks.count - 1; index++ {
                     let space = blanks[index]
                     clearWidthConstraints(space)
@@ -645,7 +635,6 @@ public extension UIView {
                 let firstSpace = self.blanks.first!
                 clearWidthConstraints(firstSpace)
                 setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                setConstantHeightConstraint(firstSpace, constant: 1, .GreaterThanOrEqual, 1) //force sibling's contentHugging
                 for var index = 1; index < blanks.count - 1; index++ {
                     let space = blanks[index]
                     clearWidthConstraints(space)
@@ -656,7 +645,6 @@ public extension UIView {
                 let firstSpace = self.blanks.first!
                 clearWidthConstraints(firstSpace)
                 setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
-                setConstantHeightConstraint(firstSpace, constant: 1, .GreaterThanOrEqual, 1) //force sibling's contentHugging
 
                 let lastSpace = self.blanks.last!
                 clearWidthConstraints(lastSpace)
@@ -680,7 +668,6 @@ public extension UIView {
                 let secondSpace = blanks[1]
                 clearWidthConstraints(secondSpace)
                 setConstantHeightConstraint(secondSpace, constant: 0, .GreaterThanOrEqual)
-                setConstantHeightConstraint(secondSpace, constant: 1, .GreaterThanOrEqual, 1) //force sibling's contentHugging
                 for nextSpace in blanks[2..<blanks.count-1] {
                     clearWidthConstraints(nextSpace)
                     setRelateHeightConstraint(nextSpace, target: secondSpace)
@@ -690,7 +677,6 @@ public extension UIView {
                 let firstSpace = self.blanks.first!
                 clearWidthConstraints(firstSpace)
                 setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
-                setConstantHeightConstraint(firstSpace, constant: 1, .GreaterThanOrEqual, 1) //force sibling's contentHugging
 
                 for nextSpace in blanks[1..<blanks.count] {
                     clearWidthConstraints(nextSpace)
@@ -701,7 +687,6 @@ public extension UIView {
                 let firstSpace = self.blanks.first!
                 clearWidthConstraints(firstSpace)
                 setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
-                setConstantHeightConstraint(firstSpace, constant: 1, .GreaterThanOrEqual, 1) //force sibling's contentHugging
 
                 for nextSpace in blanks[1..<blanks.count-1] {
                     clearWidthConstraints(nextSpace)
@@ -850,21 +835,5 @@ public extension UIView {
                 item.removeConstraint(constraint)
             }
         }
-    }
-
-    override public var viewForFirstBaselineLayout: UIView {
-        get {
-            return baseline
-        }
-    }
-
-    override public var viewForLastBaselineLayout: UIView {
-        get {
-            return baseline
-        }
-    }
-
-    override public func viewForBaselineLayout() -> UIView {
-        return baseline
     }
 }
