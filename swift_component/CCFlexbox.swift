@@ -358,7 +358,7 @@ public extension UIView {
                 item.setContentHuggingPriority(1, forAxis: .Horizontal)
             } else{
                 item.setContentCompressionResistancePriority(Float(750 - shrink), forAxis: .Horizontal) //no shrinking
-                item.setContentHuggingPriority(Float(250 - grow), forAxis: .Horizontal)
+                item.setContentHuggingPriority(Float(251 - grow), forAxis: .Horizontal)//make sibing column's inner label width grow
             }
 
             var align = getAlignSelfForItem(item)
@@ -544,7 +544,7 @@ public extension UIView {
                 item.setContentHuggingPriority(1, forAxis: .Vertical)
             } else {
                 item.setContentCompressionResistancePriority(Float(750 - shrink), forAxis: .Vertical) //no shrinking
-                item.setContentHuggingPriority(Float(250 - grow), forAxis: .Vertical)
+                item.setContentHuggingPriority(Float(251 - grow), forAxis: .Vertical) //make sibling row's inner label height grow
             }
 
             var align = getAlignSelfForItem(item)

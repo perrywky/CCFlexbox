@@ -27,7 +27,7 @@ class MasterViewController: UITableViewController {
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 29
+        return 31
     }
 
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
@@ -495,6 +495,53 @@ class MasterViewController: UITableViewController {
 
             let column = CCFlexbox.column(label1, label2, CCFlexbox.row(label4, label5).alignItems(.Baseline)).justifyContent(.SpaceBetween).alignItems(.FlexStart)
 
+            cell.contentView.addSubview(column)
+            column.snp_makeConstraints { (make) -> Void in
+                make.edges.equalTo(cell.contentView)
+            }
+        } else if indexPath.row == 29 {
+
+            let label1 = UILabel.init()
+            label1.text = "row1"
+            label1.backgroundColor = UIColor.lightGrayColor()
+
+            let colimg = UIImageView.init(image: UIImage.init(named: "wifi"))
+            colimg.flexBasis(40, 40)
+
+            let label3 = UILabel.init()
+            label3.text = "row2"
+
+            let label4 = UILabel.init()
+            label4.text = "col2"
+
+            let column = CCFlexbox.column(label1, label3)
+
+            let img = UIImageView.init(image: UIImage.init(named: "wifi"))
+            img.flexBasis(40, 40)
+
+            let row = CCFlexbox.row(img.ccLeft(16), column.ccLeft(16).flexGrow(1), label4.ccLeft(12)).alignItems(.Center)
+            cell.contentView.addSubview(row)
+            row.snp_makeConstraints { (make) -> Void in
+                make.edges.equalTo(cell.contentView)
+            }
+        } else if indexPath.row == 30 {
+
+            let label1 = UILabel.init()
+            label1.text = "col1"
+            label1.backgroundColor = UIColor.lightGrayColor()
+
+            let colimg = UIImageView.init(image: UIImage.init(named: "wifi"))
+            colimg.flexBasis(20, 20)
+
+            let label3 = UILabel.init()
+            label3.text = "col2"
+
+            let label4 = UILabel.init()
+            label4.text = "row3"
+
+            let row = CCFlexbox.row(label1, label3)
+
+            let column = CCFlexbox.column(colimg, row.flexGrow(1), label4).alignItems(.Center)
             cell.contentView.addSubview(column)
             column.snp_makeConstraints { (make) -> Void in
                 make.edges.equalTo(cell.contentView)
