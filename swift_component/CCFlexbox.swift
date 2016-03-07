@@ -70,7 +70,7 @@ public extension UIView {
         return self
     }
 
-    func ccMargin(margin:EdgeInsets) -> UIView {
+    func ccMargin(margin:UIEdgeInsets) -> UIView {
         objc_setAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin, NSValue.init(UIEdgeInsets: margin), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         if let parent = superview {
             parent.setNeedsUpdateConstraints()
@@ -80,7 +80,7 @@ public extension UIView {
 
     func ccTop(top:CGFloat) -> UIView {
         let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
-        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.top = top
         ccMargin(margin)
         return self
@@ -88,7 +88,7 @@ public extension UIView {
 
     func ccLeft(left:CGFloat) -> UIView {
         let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
-        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.left = left
         ccMargin(margin)
         return self
@@ -96,7 +96,7 @@ public extension UIView {
 
     func ccBottom(bottom:CGFloat) -> UIView {
         let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
-        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.bottom = bottom
         ccMargin(margin)
         return self
@@ -104,7 +104,7 @@ public extension UIView {
 
     func ccRight(right:CGFloat) -> UIView {
         let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
-        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.right = right
         ccMargin(margin)
         return self
@@ -112,7 +112,7 @@ public extension UIView {
 
     func ccTopAuto() -> UIView {
         let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
-        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.top = MarginAuto
         ccMargin(margin)
         return self
@@ -120,7 +120,7 @@ public extension UIView {
 
     func ccLeftAuto() -> UIView {
         let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
-        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.left = MarginAuto
         ccMargin(margin)
         return self
@@ -128,7 +128,7 @@ public extension UIView {
 
     func ccRightAuto() -> UIView {
         let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
-        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.right = MarginAuto
         ccMargin(margin)
         return self
@@ -136,7 +136,7 @@ public extension UIView {
 
     func ccBottomAuto() -> UIView {
         let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
-        var margin = marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.bottom = MarginAuto
         ccMargin(margin)
         return self
@@ -154,15 +154,17 @@ public extension UIView {
 @objc public class CCFlexbox: UIView {
 
     private var items: [UIView] = []
-    private var blanks: [UIView] = []
-    private var margins: [UIView] = []
+    private var spaces: [UIView] = [] //consuming extra spaces
+    private var margins: [UIView] = [] //gap between items
     private var vertical: Bool = false
     private var justifyContent: JustifyContent = .FlexStart
     private var alignItems: AlignItems = .Auto
-    private let baseline:UILabel = UILabel.init()
+    private let baseline:UILabel = UILabel.init() //for baseline alignment
 
-    private let spaceCrossSize:CGFloat = 0 //used for debug
-    private var constraintIdentifier:String = NSUUID().UUIDString
+    private let crossSpaceSize:CGFloat = 0 //used for debugging
+    private var constraintIdentifier:String = NSUUID().UUIDString //used for clearing existing constraints
+
+    public var updateConstraintsCount = 0;
 
     private init(items: [UIView]) {
         super.init(frame: CGRectZero)
@@ -175,7 +177,7 @@ public extension UIView {
         baseline.translatesAutoresizingMaskIntoConstraints = false
         setFixedRelateConstraint(item: baseline, attribute: .Left)
         setFixedRelateConstraint(item: baseline, attribute: .Top)
-        setFixedConstantConstraint(item: baseline, attribute: .Width, constant: spaceCrossSize)
+        setFixedConstantConstraint(item: baseline, attribute: .Width, constant: crossSpaceSize)
         setFixedRelateConstraint(item: baseline, attribute: .Height)
     }
 
@@ -225,7 +227,7 @@ public extension UIView {
         for var index = 0; index < items.count; index++ {
             let item = items[index]
 
-            //prevent overflow on cross axis
+            //prevent content overflow on cross axis
             if vertical {
                 setFixedRelateConstraint(item: item, attribute: .Width, constant: 0, relatedBy: .LessThanOrEqual, toItem: self, attribute: .Width, multiplier: 1, priority: 999)
             } else {
@@ -236,9 +238,9 @@ public extension UIView {
             previousSpace.translatesAutoresizingMaskIntoConstraints = false
             previousSpace.backgroundColor = UIColor.redColor()
             self.addSubview(previousSpace)
-            self.blanks.append(previousSpace)
+            self.spaces.append(previousSpace)
             if index > 0 {
-                let lastSpace = blanks[1 + (index-1)*2]
+                let lastSpace = spaces[1 + (index-1)*2]
                 if vertical {
                     setFixedRelateConstraint(item: previousSpace, attribute: .Top, toItem: lastSpace, attribute: .Bottom)
                 } else {
@@ -253,10 +255,10 @@ public extension UIView {
             }
             if vertical {
                 setFixedRelateConstraint(item: previousSpace, attribute: .Left)
-                setFixedConstantConstraint(item: previousSpace, attribute: .Width, constant: spaceCrossSize)
+                setFixedConstantConstraint(item: previousSpace, attribute: .Width, constant: crossSpaceSize)
             } else {
                 setFixedRelateConstraint(item: previousSpace, attribute: .Top)
-                setFixedConstantConstraint(item: previousSpace, attribute: .Height, constant: spaceCrossSize)
+                setFixedConstantConstraint(item: previousSpace, attribute: .Height, constant: crossSpaceSize)
             }
 
             let previousMargin = UIView.init()
@@ -268,13 +270,13 @@ public extension UIView {
                 setFixedRelateConstraint(item: previousMargin, attribute: .Top, toItem: previousSpace, attribute: .Bottom)
                 setFixedRelateConstraint(item: previousMargin, attribute: .Bottom, toItem: item, attribute: .Top)
                 setFixedRelateConstraint(item: previousMargin, attribute: .Left)
-                setFixedConstantConstraint(item: previousMargin, attribute: .Width, constant: spaceCrossSize)
+                setFixedConstantConstraint(item: previousMargin, attribute: .Width, constant: crossSpaceSize)
                 setFixedRelateConstraint(item: previousMargin, attribute: .Height, constant: 0, relatedBy: .LessThanOrEqual)
             } else {
                 setFixedRelateConstraint(item: previousMargin, attribute: .Left, toItem: previousSpace, attribute: .Right)
                 setFixedRelateConstraint(item: previousMargin, attribute: .Right, toItem: item, attribute: .Left)
                 setFixedRelateConstraint(item: previousMargin, attribute: .Top)
-                setFixedConstantConstraint(item: previousMargin, attribute: .Height, constant: spaceCrossSize)
+                setFixedConstantConstraint(item: previousMargin, attribute: .Height, constant: crossSpaceSize)
                 setFixedRelateConstraint(item: previousMargin, attribute: .Width, constant: 0, relatedBy: .LessThanOrEqual)
             }
 
@@ -289,12 +291,12 @@ public extension UIView {
             if vertical {
                 setFixedRelateConstraint(item: nextMargin, attribute: .Top, toItem: item, attribute: .Bottom)
                 setFixedRelateConstraint(item: nextMargin, attribute: .Left)
-                setFixedConstantConstraint(item: nextMargin, attribute: .Width, constant: spaceCrossSize)
+                setFixedConstantConstraint(item: nextMargin, attribute: .Width, constant: crossSpaceSize)
                 setFixedRelateConstraint(item: nextMargin, attribute: .Height, constant: 0, relatedBy: .LessThanOrEqual)
             } else {
                 setFixedRelateConstraint(item: nextMargin, attribute: .Left, toItem: item, attribute: .Right)
                 setFixedRelateConstraint(item: nextMargin, attribute: .Top)
-                setFixedConstantConstraint(item: nextMargin, attribute: .Height, constant: spaceCrossSize)
+                setFixedConstantConstraint(item: nextMargin, attribute: .Height, constant: crossSpaceSize)
                 setFixedRelateConstraint(item: nextMargin, attribute: .Width, constant: 0, relatedBy: .LessThanOrEqual)
             }
 
@@ -302,21 +304,21 @@ public extension UIView {
             nextSpace.translatesAutoresizingMaskIntoConstraints = false
             nextSpace.backgroundColor = UIColor.greenColor()
             self.addSubview(nextSpace)
-            self.blanks.append(nextSpace)
+            self.spaces.append(nextSpace)
             if vertical {
                 setFixedRelateConstraint(item: nextSpace, attribute: .Top, toItem: nextMargin, attribute: .Bottom)
                 setFixedRelateConstraint(item: nextSpace, attribute: .Left)
-                setFixedConstantConstraint(item: nextSpace, attribute: .Width, constant: spaceCrossSize)
+                setFixedConstantConstraint(item: nextSpace, attribute: .Width, constant: crossSpaceSize)
                 if index == items.count - 1 {
-                    //prevent overflow
+                    //prevent content overflow on main axis
                     setFixedRelateConstraint(item: nextSpace, attribute: .Bottom, constant: 0, relatedBy: .Equal, toItem: self, attribute: .Bottom, multiplier: 1, priority: 999)
                 }
             } else {
                 setFixedRelateConstraint(item: nextSpace, attribute: .Left, toItem: nextMargin, attribute: .Right)
                 setFixedRelateConstraint(item: nextSpace, attribute: .Top)
-                setFixedConstantConstraint(item: nextSpace, attribute: .Height, constant: spaceCrossSize)
+                setFixedConstantConstraint(item: nextSpace, attribute: .Height, constant: crossSpaceSize)
                 if index == items.count - 1 {
-                    //prevent overflow
+                    //prevent content overflow on main axis
                     setFixedRelateConstraint(item: nextSpace, attribute: .Right, constant: 0, relatedBy: .Equal, toItem: self, attribute: .Right, multiplier: 1, priority: 999)
                 }
             }
@@ -324,13 +326,14 @@ public extension UIView {
     }
 
     override public func updateConstraints() {
-        clearWidthConstraints(self)
+        clearFlexConstraints(self)
         if vertical {
             updateVerticalConstraints()
         } else {
             updateHorizontalConstraints()
         }
         super.updateConstraints()
+        self.updateConstraintsCount += 1
     }
 
     private func updateHorizontalConstraints() {
@@ -343,14 +346,13 @@ public extension UIView {
         var autoMargins:[UIView] = []
         for var index = 0; index < items.count; index++ {
             let item = items[index]
-            clearWidthConstraints(item)
+            clearFlexConstraints(item)
 
             let basis = getFlexBasisForItem(item)
             let grow = max(getFlexGrowForItem(item), 0)
             let shrink = max(getFlexShrinkForItem(item), 0)
             if basis.width != UIViewNoIntrinsicMetric {
-                setConstantWidthConstraint(item, constant: basis.width, .GreaterThanOrEqual, Float(750-shrink))
-                setConstantWidthConstraint(item, constant: basis.width, .LessThanOrEqual, Float(250-shrink))
+                setConstantWidthConstraint(item, constant: basis.width, .GreaterThanOrEqual, Float(250-grow))
                 setConstantWidthConstraint(item, constant: basis.width, .Equal, Float(750-shrink))
 
                 //prevent content size changing bound size
@@ -397,7 +399,7 @@ public extension UIView {
             }
 
             let leftMargin = self.margins[index * 2]
-            clearWidthConstraints(leftMargin)
+            clearFlexConstraints(leftMargin)
             if margin.left == MarginAuto {
                 autoMargins.append(leftMargin)
             } else {
@@ -405,7 +407,7 @@ public extension UIView {
             }
 
             let rightMargin = self.margins[1+index*2]
-            clearWidthConstraints(rightMargin)
+            clearFlexConstraints(rightMargin)
             if margin.right == MarginAuto {
                 autoMargins.append(rightMargin)
             } else {
@@ -413,6 +415,7 @@ public extension UIView {
             }
         }
         if autoMargins.count > 0 {
+            //auto margins consume all extra space
             let firstMargin = autoMargins.first!
             if grows > 0 {
                 setConstantWidthConstraint(firstMargin, constant: 0)
@@ -426,93 +429,117 @@ public extension UIView {
         }
 
         if grows > 0 {
-            for var index = 0; index < blanks.count; index++ {
-                let space = blanks[index]
-                clearWidthConstraints(space)
+            for var index = 0; index < spaces.count; index++ {
+                let space = spaces[index]
+                clearFlexConstraints(space)
                 setConstantWidthConstraint(space, constant: 0)
             }
         } else {
             switch justifyContent {
             case .FlexStart:
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
                 setConstantWidthConstraint(firstSpace, constant: 0)
-                let lastSpace = self.blanks.last!
-                clearWidthConstraints(lastSpace)
-                setConstantWidthConstraint(lastSpace, constant: 0, .GreaterThanOrEqual)
-                for var index = 1; index < blanks.count - 1; index++ {
-                    let space = blanks[index]
-                    clearWidthConstraints(space)
+                let lastSpace = self.spaces.last!
+                clearFlexConstraints(lastSpace)
+                if autoMargins.count > 0 {
+                    setConstantWidthConstraint(lastSpace, constant: 0, .Equal)
+                } else {
+                    setConstantWidthConstraint(lastSpace, constant: 0, .GreaterThanOrEqual)
+                }
+                for var index = 1; index < spaces.count - 1; index++ {
+                    let space = spaces[index]
+                    clearFlexConstraints(space)
                     setConstantWidthConstraint(space, constant: 0)
                 }
                 break
             case .FlexEnd:
-                let lastSpace = self.blanks.last!
-                clearWidthConstraints(lastSpace)
+                let lastSpace = self.spaces.last!
+                clearFlexConstraints(lastSpace)
                 setConstantWidthConstraint(lastSpace, constant: 0)
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
-                setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                for var index = 1; index < blanks.count - 1; index++ {
-                    let space = blanks[index]
-                    clearWidthConstraints(space)
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
+                if autoMargins.count > 0 {
+                    setConstantWidthConstraint(firstSpace, constant: 0, .Equal)
+                } else {
+                    setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
+                }
+                for var index = 1; index < spaces.count - 1; index++ {
+                    let space = spaces[index]
+                    clearFlexConstraints(space)
                     setConstantWidthConstraint(space, constant: 0)
                 }
                 break
             case .Center:
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
-                setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
+                if autoMargins.count > 0 {
+                    setConstantWidthConstraint(firstSpace, constant: 0, .Equal)
+                } else {
+                    setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
+                }
 
-                let lastSpace = self.blanks.last!
-                clearWidthConstraints(lastSpace)
+                let lastSpace = self.spaces.last!
+                clearFlexConstraints(lastSpace)
                 setRelateWidthConstraint(lastSpace, target: firstSpace)
 
-                for var index = 1; index < blanks.count - 1; index++ {
-                    let space = blanks[index]
-                    clearWidthConstraints(space)
+                for var index = 1; index < spaces.count - 1; index++ {
+                    let space = spaces[index]
+                    clearFlexConstraints(space)
                     setConstantWidthConstraint(space, constant: 0)
                 }
                 break
             case .SpaceBetween:
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
                 setConstantWidthConstraint(firstSpace, constant: 0)
 
-                let lastSpace = self.blanks.last!
-                clearWidthConstraints(lastSpace)
+                let lastSpace = self.spaces.last!
+                clearFlexConstraints(lastSpace)
                 setConstantWidthConstraint(lastSpace, constant: 0)
 
-                let secondSpace = blanks[1]
-                clearWidthConstraints(secondSpace)
-                setConstantWidthConstraint(secondSpace, constant: 0, .GreaterThanOrEqual)
-                for nextSpace in blanks[2..<blanks.count-1] {
-                    clearWidthConstraints(nextSpace)
+                let secondSpace = spaces[1]
+                clearFlexConstraints(secondSpace)
+                if autoMargins.count > 0 {
+                    setConstantWidthConstraint(secondSpace, constant: 0, .Equal)
+                } else {
+                    setConstantWidthConstraint(secondSpace, constant: 0, .GreaterThanOrEqual)
+                }
+                for nextSpace in spaces[2..<spaces.count-1] {
+                    clearFlexConstraints(nextSpace)
                     setRelateWidthConstraint(nextSpace, target: secondSpace)
                 }
                 break
             case .SpaceAround:
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
-                setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
+                if autoMargins.count > 0 {
+                    setConstantWidthConstraint(firstSpace, constant: 0, .Equal)
+                } else {
+                    setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
+                }
 
-                for nextSpace in blanks[1..<blanks.count] {
-                    clearWidthConstraints(nextSpace)
+                for nextSpace in spaces[1..<spaces.count] {
+                    clearFlexConstraints(nextSpace)
                     setRelateWidthConstraint(nextSpace, target: firstSpace)
                 }
                 break
             case .SpaceSeperate:
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
-                setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
+                if autoMargins.count > 0 {
+                    setConstantWidthConstraint(firstSpace, constant: 0, .Equal)
+                } else {
+                    setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
+                }
 
-                for nextSpace in blanks[1..<blanks.count-1] {
-                    clearWidthConstraints(nextSpace)
+                for nextSpace in spaces[1..<spaces.count-1] {
+                    clearFlexConstraints(nextSpace)
                     setRelateWidthConstraint(firstSpace, target: nextSpace, multiplier: 2)
                 }
 
-                let lastSpace = self.blanks.last!
-                clearWidthConstraints(lastSpace)
+                let lastSpace = self.spaces.last!
+                clearFlexConstraints(lastSpace)
                 setRelateWidthConstraint(lastSpace, target: firstSpace)
                 break
             }
@@ -529,14 +556,13 @@ public extension UIView {
         var autoMargins:[UIView] = []
         for var index = 0; index < items.count; index++ {
             let item = items[index]
-            clearWidthConstraints(item)
+            clearFlexConstraints(item)
 
             let basis = getFlexBasisForItem(item)
             let grow = getFlexGrowForItem(item)
             let shrink = getFlexShrinkForItem(item)
             if basis.height != UIViewNoIntrinsicMetric {
-                setConstantHeightConstraint(item, constant: basis.height, .GreaterThanOrEqual, Float(750-shrink))
-                setConstantHeightConstraint(item, constant: basis.height, .LessThanOrEqual, Float(250-shrink))
+                setConstantHeightConstraint(item, constant: basis.height, .GreaterThanOrEqual, Float(250-grow))
                 setConstantHeightConstraint(item, constant: basis.height, .Equal, Float(750-shrink))
 
                 //prevent content size changing bound size
@@ -580,14 +606,14 @@ public extension UIView {
             }
 
             let topMargin = self.margins[index * 2]
-            clearWidthConstraints(topMargin)
+            clearFlexConstraints(topMargin)
             if margin.top == MarginAuto {
                 autoMargins.append(topMargin)
             } else {
                 setConstantHeightConstraint(topMargin, constant: margin.top)
             }
             let bottomMargin = self.margins[1+index*2]
-            clearWidthConstraints(bottomMargin)
+            clearFlexConstraints(bottomMargin)
             if margin.bottom == MarginAuto {
                 autoMargins.append(bottomMargin)
             } else {
@@ -608,93 +634,117 @@ public extension UIView {
         }
 
         if grows > 0 {
-            for var index = 0; index < blanks.count; index++ {
-                let space = blanks[index]
-                clearWidthConstraints(space)
+            for var index = 0; index < spaces.count; index++ {
+                let space = spaces[index]
+                clearFlexConstraints(space)
                 setConstantHeightConstraint(space, constant: 0)
             }
         } else {
             switch justifyContent {
             case .FlexStart:
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
                 setConstantHeightConstraint(firstSpace, constant: 0)
-                let lastSpace = self.blanks.last!
-                clearWidthConstraints(lastSpace)
-                setConstantHeightConstraint(lastSpace, constant: 0, .GreaterThanOrEqual)
-                for var index = 1; index < blanks.count - 1; index++ {
-                    let space = blanks[index]
-                    clearWidthConstraints(space)
+                let lastSpace = self.spaces.last!
+                clearFlexConstraints(lastSpace)
+                if autoMargins.count > 0 {
+                    setConstantHeightConstraint(lastSpace, constant: 0, .Equal)
+                } else {
+                    setConstantHeightConstraint(lastSpace, constant: 0, .GreaterThanOrEqual)
+                }
+                for var index = 1; index < spaces.count - 1; index++ {
+                    let space = spaces[index]
+                    clearFlexConstraints(space)
                     setConstantHeightConstraint(space, constant: 0)
                 }
                 break
             case .FlexEnd:
-                let lastSpace = self.blanks.last!
-                clearWidthConstraints(lastSpace)
+                let lastSpace = self.spaces.last!
+                clearFlexConstraints(lastSpace)
                 setConstantHeightConstraint(lastSpace, constant: 0)
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
-                setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                for var index = 1; index < blanks.count - 1; index++ {
-                    let space = blanks[index]
-                    clearWidthConstraints(space)
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
+                if autoMargins.count > 0 {
+                    setConstantHeightConstraint(firstSpace, constant: 0, .Equal)
+                } else {
+                    setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
+                }
+                for var index = 1; index < spaces.count - 1; index++ {
+                    let space = spaces[index]
+                    clearFlexConstraints(space)
                     setConstantHeightConstraint(space, constant: 0)
                 }
                 break
             case .Center:
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
-                setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
+                if autoMargins.count > 0 {
+                    setConstantHeightConstraint(firstSpace, constant: 0, .Equal)
+                } else {
+                    setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
+                }
 
-                let lastSpace = self.blanks.last!
-                clearWidthConstraints(lastSpace)
+                let lastSpace = self.spaces.last!
+                clearFlexConstraints(lastSpace)
                 setRelateHeightConstraint(lastSpace, target: firstSpace)
 
-                for var index = 1; index < blanks.count - 1; index++ {
-                    let space = blanks[index]
-                    clearWidthConstraints(space)
+                for var index = 1; index < spaces.count - 1; index++ {
+                    let space = spaces[index]
+                    clearFlexConstraints(space)
                     setConstantHeightConstraint(space, constant: 0)
                 }
                 break
             case .SpaceBetween:
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
                 setConstantHeightConstraint(firstSpace, constant: 0)
 
-                let lastSpace = self.blanks.last!
-                clearWidthConstraints(lastSpace)
+                let lastSpace = self.spaces.last!
+                clearFlexConstraints(lastSpace)
                 setConstantHeightConstraint(lastSpace, constant: 0)
 
-                let secondSpace = blanks[1]
-                clearWidthConstraints(secondSpace)
-                setConstantHeightConstraint(secondSpace, constant: 0, .GreaterThanOrEqual)
-                for nextSpace in blanks[2..<blanks.count-1] {
-                    clearWidthConstraints(nextSpace)
+                let secondSpace = spaces[1]
+                clearFlexConstraints(secondSpace)
+                if autoMargins.count > 0 {
+                    setConstantHeightConstraint(secondSpace, constant: 0, .Equal)
+                } else {
+                    setConstantHeightConstraint(secondSpace, constant: 0, .GreaterThanOrEqual)
+                }
+                for nextSpace in spaces[2..<spaces.count-1] {
+                    clearFlexConstraints(nextSpace)
                     setRelateHeightConstraint(nextSpace, target: secondSpace)
                 }
                 break
             case .SpaceAround:
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
-                setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
+                if autoMargins.count > 0 {
+                    setConstantHeightConstraint(firstSpace, constant: 0, .Equal)
+                } else {
+                    setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
+                }
 
-                for nextSpace in blanks[1..<blanks.count] {
-                    clearWidthConstraints(nextSpace)
+                for nextSpace in spaces[1..<spaces.count] {
+                    clearFlexConstraints(nextSpace)
                     setRelateHeightConstraint(nextSpace, target: firstSpace)
                 }
                 break
             case .SpaceSeperate:
-                let firstSpace = self.blanks.first!
-                clearWidthConstraints(firstSpace)
-                setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual) //0 if any auto margin, otherwise > 0
+                let firstSpace = self.spaces.first!
+                clearFlexConstraints(firstSpace)
+                if autoMargins.count > 0 {
+                    setConstantHeightConstraint(firstSpace, constant: 0, .Equal)
+                } else {
+                    setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
+                }
 
-                for nextSpace in blanks[1..<blanks.count-1] {
-                    clearWidthConstraints(nextSpace)
+                for nextSpace in spaces[1..<spaces.count-1] {
+                    clearFlexConstraints(nextSpace)
                     setRelateHeightConstraint(firstSpace, target: nextSpace, multiplier: 2)
                 }
 
-                let lastSpace = self.blanks.last!
-                clearWidthConstraints(lastSpace)
+                let lastSpace = self.spaces.last!
+                clearFlexConstraints(lastSpace)
                 setRelateHeightConstraint(lastSpace, target: firstSpace)
                 break
             }
@@ -721,19 +771,19 @@ public extension UIView {
         return alignValue == nil ? AlignItems.Auto : AlignItems(rawValue: alignValue.integerValue)!
     }
 
-    private func getMarginForItem(item:UIView) -> EdgeInsets {
+    private func getMarginForItem(item:UIView) -> UIEdgeInsets {
         let marginValue = objc_getAssociatedObject(item, &FlexboxAssociatedKeys.ccMargin)
-        return marginValue == nil ? EdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        return marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
     }
 
-    private func clearWidthConstraints(item:UIView) {
-        let refreshConstraints = item.constraints.filter { (constraint) -> Bool in
+    private func clearFlexConstraints(item:UIView) {
+        let flexConstraints = item.constraints.filter { (constraint) -> Bool in
             return constraint.identifier == constraintIdentifier
         }
         if #available(iOS 8.0, *) {
-            NSLayoutConstraint.deactivateConstraints(refreshConstraints)
+            NSLayoutConstraint.deactivateConstraints(flexConstraints)
         } else {
-            item.removeConstraints(refreshConstraints)
+            item.removeConstraints(flexConstraints)
         }
     }
 

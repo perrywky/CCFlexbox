@@ -27,7 +27,7 @@ class MasterViewController: UITableViewController {
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 31
+        return 1
     }
 
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
@@ -67,13 +67,14 @@ class MasterViewController: UITableViewController {
                 break;
             }
             let img = UIImageView.init(image: UIImage.init(named: "wifi"))
-            img.flexBasis(40, 40)
             let label1 = UILabel.init()
             label1.text = "--row--"
             let flexbox = CCFlexbox.row(img, label, label1).justifyContent(justify)
+            flexbox.tag = 1
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
+            alignFrame(flexbox, view2: cell.contentView)
+            for _ in 1...5 {
+                img.flexBasis(40, 40)
             }
         } else if indexPath.row == 6 {
             let label = UILabel.init()
@@ -88,9 +89,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 7 {
             let label = UILabel.init()
             label.backgroundColor = UIColor.lightGrayColor()
@@ -104,25 +103,21 @@ class MasterViewController: UITableViewController {
             
             let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 8 {
             let label = UILabel.init()
-            label.tag = 1
             label.backgroundColor = UIColor.lightGrayColor()
             label.text = "FlexShrink(1): Lorem ipsum"
             label.flexShrink(1)
 
             let label2 = UILabel.init()
+            label2.tag = 1
             label2.backgroundColor = UIColor.greenColor()
             label2.text = "FlexShrink(0): Lorem ipsum"
 
             let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 9 {
             let label = UILabel.init()
             label.backgroundColor = UIColor.lightGrayColor()
@@ -137,9 +132,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 10 {
             let label = UILabel.init()
             label.text = "ccLeft(10)"
@@ -156,11 +149,9 @@ class MasterViewController: UITableViewController {
             label3.backgroundColor = UIColor.lightGrayColor()
             label3.ccLeftAuto()
 
-            let flexbox = CCFlexbox.row(label, label2, label3).justifyContent(.FlexStart)
+            let flexbox = CCFlexbox.row(label, label2, label3).justifyContent(.FlexEnd)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 11 {
             let label = UILabel.init()
             label.text = "alignSelf(.FlexStart)"
@@ -189,9 +180,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.row(label, label2, label3, label4, label5).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 12 {
             let label = UILabel.init()
             label.text = "column"
@@ -201,9 +190,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 13 {
             let label = UILabel.init()
             label.text = "column"
@@ -213,9 +200,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.FlexEnd)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 14 {
             let label = UILabel.init()
             label.text = "column"
@@ -225,9 +210,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.Center)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 15 {
             let label = UILabel.init()
             label.text = "column"
@@ -237,9 +220,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.SpaceBetween)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 16 {
             let label = UILabel.init()
             label.text = "column"
@@ -249,9 +230,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.SpaceAround)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 17 {
             let label = UILabel.init()
             label.text = "column"
@@ -261,9 +240,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.SpaceSeperate)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 18 {
             let label = UILabel.init()
             label.text = "FlexGrow(0)"
@@ -277,9 +254,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 19 {
             let label = UILabel.init()
             label.text = "FlexGrow(1)"
@@ -293,9 +268,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 20 {
             let label = UILabel.init()
             label.text = "FlexShrink(1)"
@@ -311,9 +284,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 21 {
             let label = UILabel.init()
             label.text = "FlexBasis(0, 50)"
@@ -328,9 +299,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 22 {
             let label = UILabel.init()
             label.text = "ccTop(5)"
@@ -344,9 +313,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label3).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 23 {
             let label = UILabel.init()
             label.text = "alignSelf(.FlexStart)"
@@ -365,9 +332,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label, label2, label3).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 24 {
 
             let label3 = UILabel.init()
@@ -387,9 +352,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.column(label3, label4, label5).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 25 {
 
             let img = UIImageView.init(image: UIImage.init(named: "wifi"))
@@ -411,9 +374,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.row(img.ccLeft(8), column.ccLeft(8).ccRight(8), label3.ccRight(8).flexGrow(1)).alignItems(.Center)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 26 {
 
             let label1 = UILabel.init()
@@ -442,9 +403,7 @@ class MasterViewController: UITableViewController {
 
             let flexbox = CCFlexbox.row(column1, CCFlexbox.column(label3, label4), column3).justifyContent(.SpaceBetween).alignItems(.Center)
             cell.contentView.addSubview(flexbox)
-            flexbox.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 27 {
 
             let label1 = UILabel.init()
@@ -474,9 +433,7 @@ class MasterViewController: UITableViewController {
 
             let row = CCFlexbox.row(img.ccLeft(16), column.ccLeft(16).flexGrow(1), img2.ccRight(12)).alignItems(.Center)
             cell.contentView.addSubview(row)
-            row.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(row, view2: cell.contentView)
         } else if indexPath.row == 28 {
 
             let label1 = UILabel.init()
@@ -496,13 +453,11 @@ class MasterViewController: UITableViewController {
             let column = CCFlexbox.column(label1, label2, CCFlexbox.row(label4, label5).alignItems(.Baseline)).justifyContent(.SpaceBetween).alignItems(.FlexStart)
 
             cell.contentView.addSubview(column)
-            column.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(column, view2: cell.contentView)
         } else if indexPath.row == 29 {
 
             let label1 = UILabel.init()
-            label1.text = "row1"
+            label1.text = "row1 grow(1)"
             label1.backgroundColor = UIColor.lightGrayColor()
 
             let colimg = UIImageView.init(image: UIImage.init(named: "wifi"))
@@ -512,7 +467,8 @@ class MasterViewController: UITableViewController {
             label3.text = "row2"
 
             let label4 = UILabel.init()
-            label4.text = "col2"
+            label4.text = "col2 grow(0)"
+            label4.tag = 1
 
             let column = CCFlexbox.column(label1, label3)
 
@@ -521,9 +477,7 @@ class MasterViewController: UITableViewController {
 
             let row = CCFlexbox.row(img.ccLeft(16), column.ccLeft(16).flexGrow(1), label4.ccLeft(12)).alignItems(.Center)
             cell.contentView.addSubview(row)
-            row.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(row, view2: cell.contentView)
         } else if indexPath.row == 30 {
 
             let label1 = UILabel.init()
@@ -543,21 +497,27 @@ class MasterViewController: UITableViewController {
 
             let column = CCFlexbox.column(colimg, row.flexGrow(1), label4).alignItems(.Center)
             cell.contentView.addSubview(column)
-            column.snp_makeConstraints { (make) -> Void in
-                make.edges.equalTo(cell.contentView)
-            }
+            alignFrame(column, view2: cell.contentView)
         }
         return cell
     }
 
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        if indexPath.row == 8 {
+        if indexPath.row == 0 {
+            let cell = tableView.cellForRowAtIndexPath(indexPath)!
+            if let box:CCFlexbox = cell.contentView.viewWithTag(1) as? CCFlexbox {
+                NSLog("update count %d", box.updateConstraintsCount)
+            }
+
+        } else if indexPath.row == 8 {
             let cell = tableView.cellForRowAtIndexPath(indexPath)!
             if let label:UILabel = cell.contentView.viewWithTag(1) as? UILabel {
-                if label.text == "abc" {
-                    label.text = "FlexShrink(1): Lorem ipsum"
+                if label.text == "FlexShrink(0): Lorem ipsum" {
+                    label.flexShrink(2)
+                    label.text = "FlexShrink(2): Lorem ipsum"
                 } else {
-                    label.text = "abc"
+                    label.flexShrink(0)
+                    label.text = "FlexShrink(0): Lorem ipsum"
                 }
             }
         }else if indexPath.row == 9 {
@@ -573,10 +533,12 @@ class MasterViewController: UITableViewController {
         }else if indexPath.row == 20 {
             let cell = tableView.cellForRowAtIndexPath(indexPath)!
             let label = cell.contentView.viewWithTag(1) as! UILabel
-            if label.font.pointSize == UIFont.systemFontSize() {
-                label.font = UIFont.systemFontOfSize(40)
+            if label.text == "FlexShrink(0)" {
+                label.flexShrink(2)
+                label.text = "FlexShrink(2)"
             } else {
-                label.font = UIFont.systemFontOfSize(UIFont.systemFontSize())
+                label.flexShrink(0)
+                label.text = "FlexShrink(0)"
             }
         } else if indexPath.row == 21 {
             let cell = tableView.cellForRowAtIndexPath(indexPath)!
@@ -598,6 +560,44 @@ class MasterViewController: UITableViewController {
                 label.flexGrow(1)
                 label.text = "flexGrow(1)"
             }
+        } else if indexPath.row == 29 {
+            let cell = tableView.cellForRowAtIndexPath(indexPath)!
+            let label = cell.contentView.viewWithTag(1) as! UILabel
+            if label.text == "col2 grow(0)" {
+                label.flexGrow(2)
+                label.text = "col2 grow(2)"
+            } else {
+                label.flexGrow(0)
+                label.text = "col2 grow(0)"
+            }
+        }
+    }
+
+    private func alignFrame(view1:UIView, view2:UIView) {
+        view1.translatesAutoresizingMaskIntoConstraints = false;
+        let constraint1 = NSLayoutConstraint(item: view1, attribute: .Top, relatedBy: .Equal, toItem: view2, attribute: .Top, multiplier: 1, constant: 0)
+        if #available(iOS 8.0, *) {
+            constraint1.active = true
+        } else {
+            view1.addConstraint(constraint1)
+        }
+        let constraint2 = NSLayoutConstraint(item: view1, attribute: .Bottom, relatedBy: .Equal, toItem: view2, attribute: .Bottom, multiplier: 1, constant: 0)
+        if #available(iOS 8.0, *) {
+            constraint2.active = true
+        } else {
+            view1.addConstraint(constraint2)
+        }
+        let constraint3 = NSLayoutConstraint(item: view1, attribute: .Left, relatedBy: .Equal, toItem: view2, attribute: .Left, multiplier: 1, constant: 0)
+        if #available(iOS 8.0, *) {
+            constraint3.active = true
+        } else {
+            view1.addConstraint(constraint3)
+        }
+        let constraint4 = NSLayoutConstraint(item: view1, attribute: .Right, relatedBy: .Equal, toItem: view2, attribute: .Right, multiplier: 1, constant: 0)
+        if #available(iOS 8.0, *) {
+            constraint4.active = true
+        } else {
+            view1.addConstraint(constraint4)
         }
     }
 
