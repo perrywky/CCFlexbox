@@ -27,7 +27,7 @@ class MasterViewController: UITableViewController {
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return 32
     }
 
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
@@ -46,6 +46,7 @@ class MasterViewController: UITableViewController {
         if indexPath.row < 6 {
             let justify = JustifyContent(rawValue: indexPath.row)!
             let label = UILabel.init()
+            label.backgroundColor = UIColor.greenColor()
             switch justify {
             case .FlexStart:
                 label.text = "FlexStart"
@@ -69,7 +70,10 @@ class MasterViewController: UITableViewController {
             let img = UIImageView.init(image: UIImage.init(named: "wifi"))
             let label1 = UILabel.init()
             label1.text = "--row--"
-            let flexbox = CCFlexbox.row(img, label, label1).justifyContent(justify)
+            label1.backgroundColor = UIColor.lightGrayColor()
+            let flexbox = CCFlexbox.row(
+                img.ccLeft(10), label.ccLeft(10).flexGrow(0), label1.ccLeft(10).ccRight(10)
+                ).justifyContent(justify)
             flexbox.tag = 1
             cell.contentView.addSubview(flexbox)
             alignFrame(flexbox, view2: cell.contentView)
@@ -154,7 +158,7 @@ class MasterViewController: UITableViewController {
             alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 11 {
             let label = UILabel.init()
-            label.text = "alignSelf(.FlexStart)"
+            label.text = "FlexStart"
             label.backgroundColor = UIColor.lightGrayColor()
             label.alignSelf(.FlexStart)
 
@@ -318,15 +322,18 @@ class MasterViewController: UITableViewController {
             let label = UILabel.init()
             label.text = "alignSelf(.FlexStart)"
             label.backgroundColor = UIColor.lightGrayColor()
+            label.font = UIFont.systemFontOfSize(12)
             label.alignSelf(.FlexStart)
 
             let label2 = UILabel.init()
             label2.backgroundColor = UIColor.greenColor()
+            label2.font = UIFont.systemFontOfSize(10)
             label2.text = "FlexEnd"
             label2.alignSelf(.FlexEnd)
 
             let label3 = UILabel.init()
             label3.text = "Center"
+            label3.font = UIFont.systemFontOfSize(12)
             label3.backgroundColor = UIColor.lightGrayColor()
             label3.alignSelf(.Center)
 
@@ -371,6 +378,8 @@ class MasterViewController: UITableViewController {
 
             let column = CCFlexbox.column(label1, label2)
             column.backgroundColor = UIColor.darkGrayColor()
+            column.justifyContent(.SpaceSeperate)
+            column.alignSelf(.Stretch)
 
             let flexbox = CCFlexbox.row(img.ccLeft(8), column.ccLeft(8).ccRight(8), label3.ccRight(8).flexGrow(1)).alignItems(.Center)
             cell.contentView.addSubview(flexbox)
@@ -411,7 +420,7 @@ class MasterViewController: UITableViewController {
             label1.backgroundColor = UIColor.lightGrayColor()
 
             let colimg = UIImageView.init(image: UIImage.init(named: "wifi"))
-            colimg.flexBasis(40, 40)
+            colimg.flexBasis(20, 20)
 
             let label3 = UILabel.init()
             label3.text = "col1"
@@ -422,7 +431,7 @@ class MasterViewController: UITableViewController {
             let label5 = UILabel.init()
             label5.text = "col3"
 
-            let column = CCFlexbox.column(label1, colimg, CCFlexbox.row(label3, label4, label5).alignItems(.Center)).justifyContent(.SpaceBetween).alignItems(.FlexStart)
+            let column = CCFlexbox.column(label1, colimg, CCFlexbox.row(label3, label4, label5).alignItems(.Center).justifyContent(.SpaceSeperate).alignSelf(.Stretch)).justifyContent(.SpaceBetween).alignItems(.Center)
             column.backgroundColor = UIColor.darkGrayColor()
 
             let img = UIImageView.init(image: UIImage.init(named: "wifi"))
@@ -431,7 +440,7 @@ class MasterViewController: UITableViewController {
             let img2 = UIImageView.init(image: UIImage.init(named: "wifi"))
             img2.flexBasis(40, 40)
 
-            let row = CCFlexbox.row(img.ccLeft(16), column.ccLeft(16).flexGrow(1), img2.ccRight(12)).alignItems(.Center)
+            let row = CCFlexbox.row(img.ccLeft(16), column.ccLeft(16).flexGrow(1).alignSelf(.Stretch), img2.ccRight(12)).alignItems(.Center)
             cell.contentView.addSubview(row)
             alignFrame(row, view2: cell.contentView)
         } else if indexPath.row == 28 {
@@ -465,12 +474,13 @@ class MasterViewController: UITableViewController {
 
             let label3 = UILabel.init()
             label3.text = "row2"
+            label3.backgroundColor = UIColor.darkGrayColor()
 
             let label4 = UILabel.init()
             label4.text = "col2 grow(0)"
             label4.tag = 1
 
-            let column = CCFlexbox.column(label1, label3)
+            let column = CCFlexbox.column(label1, label3.alignSelf(.Center))
 
             let img = UIImageView.init(image: UIImage.init(named: "wifi"))
             img.flexBasis(40, 40)
@@ -498,6 +508,41 @@ class MasterViewController: UITableViewController {
             let column = CCFlexbox.column(colimg, row.flexGrow(1), label4).alignItems(.Center)
             cell.contentView.addSubview(column)
             alignFrame(column, view2: cell.contentView)
+        } else if indexPath.row == 31 {
+
+            let label1 = UILabel.init()
+            label1.text = "row1.column1"
+            label1.font = UIFont.systemFontOfSize(12)
+
+            let label2 = UILabel.init()
+            label2.text = "row1.column2"
+            label2.font = UIFont.systemFontOfSize(12)
+
+            let label3 = UILabel.init()
+            label3.text = "row2.column1"
+            label3.font = UIFont.systemFontOfSize(10)
+
+            let label4 = UILabel.init()
+            label4.text = "row2.column2"
+            label4.font = UIFont.systemFontOfSize(10)
+
+            let label5 = UILabel.init()
+            label5.text = "row3.column1"
+            label5.font = UIFont.systemFontOfSize(14)
+
+            let label6 = UILabel.init()
+            label6.text = "row3.column2"
+            label6.font = UIFont.systemFontOfSize(14)
+
+            let row1 = CCFlexbox.row(label1, label2.ccLeft(5))
+            row1.backgroundColor = UIColor.lightGrayColor()
+
+            let row3 = CCFlexbox.row(label5, label6.ccLeft(5))
+            row3.backgroundColor = UIColor.darkGrayColor()
+
+            let flexbox = CCFlexbox.column(row1, CCFlexbox.row(label3, label4.ccLeft(5)), row3).justifyContent(.SpaceBetween).alignItems(.Center)
+            cell.contentView.addSubview(flexbox)
+            alignFrame(flexbox, view2: cell.contentView)
         }
         return cell
     }

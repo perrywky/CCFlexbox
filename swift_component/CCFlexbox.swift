@@ -18,6 +18,57 @@ private struct FlexboxAssociatedKeys {
     static var ccMargin = "ccMargin"
 }
 
+private struct AxisLayoutAttributes {
+    let mainAxis: UILayoutConstraintAxis
+    let crossAxis: UILayoutConstraintAxis
+    let mainPrevious: NSLayoutAttribute
+    let mainNext: NSLayoutAttribute
+    let crossPrevious: NSLayoutAttribute
+    let crossNext: NSLayoutAttribute
+    let mainSize: NSLayoutAttribute
+    let crossSize: NSLayoutAttribute
+    let mainCenter:NSLayoutAttribute
+    let crossCenter:NSLayoutAttribute
+
+    init(vertical:Bool) {
+        if vertical {
+            mainAxis = .Vertical
+            crossAxis = .Horizontal
+            mainPrevious = .Top
+            mainNext = .Bottom
+            crossPrevious = .Left
+            crossNext = .Right
+            mainSize = .Height
+            crossSize = .Width
+            mainCenter = .CenterY
+            crossCenter = .CenterX
+        } else {
+            mainAxis = .Horizontal
+            crossAxis = .Vertical
+            mainPrevious = .Left
+            mainNext = .Right
+            crossPrevious = .Top
+            crossNext = .Bottom
+            mainSize = .Width
+            crossSize = .Height
+            mainCenter = .CenterX
+            crossCenter = .CenterY
+        }
+    }
+}
+
+private struct AxisMargins {
+    var mainPrevious: CGFloat
+    var mainNext: CGFloat
+    var crossPrevious: CGFloat
+    var crossNext: CGFloat
+}
+
+private struct AxisBasis {
+    let mainBasis: CGFloat
+    let crossBasis: CGFloat
+}
+
 public let MarginAuto:CGFloat = CGFloat.max
 
 public extension UIView {
@@ -143,6 +194,14 @@ public extension UIView {
     }
 }
 
+private class CCLayoutGuide: UIView {
+
+}
+
+private class CCLabelLayoutGuide: UILabel {
+
+}
+
 @objc public enum JustifyContent: Int{
     case FlexStart, FlexEnd, Center, SpaceBetween, SpaceAround, SpaceSeperate
 }
@@ -154,17 +213,17 @@ public extension UIView {
 @objc public class CCFlexbox: UIView {
 
     private var items: [UIView] = []
-    private var spaces: [UIView] = [] //consuming extra spaces
-    private var margins: [UIView] = [] //gap between items
     private var vertical: Bool = false
     private var justifyContent: JustifyContent = .FlexStart
     private var alignItems: AlignItems = .Auto
-    private let baseline:UILabel = UILabel.init() //for baseline alignment
+    private let baseline:CCLabelLayoutGuide = CCLabelLayoutGuide.init() //for baseline alignment
 
-    private let crossSpaceSize:CGFloat = 0 //used for debugging
+    private let layoutGuideSize:CGFloat = 2 //used for debugging
     private var constraintIdentifier:String = NSUUID().UUIDString //used for clearing existing constraints
 
     public var updateConstraintsCount = 0;
+
+    private var axisAttributes:AxisLayoutAttributes = AxisLayoutAttributes.init(vertical: false)
 
     private init(items: [UIView]) {
         super.init(frame: CGRectZero)
@@ -172,13 +231,6 @@ public extension UIView {
         for item in items {
             self.addSubview(item)
         }
-        self.addSubview(baseline)
-        baseline.backgroundColor = UIColor.blackColor()
-        baseline.translatesAutoresizingMaskIntoConstraints = false
-        setFixedRelateConstraint(item: baseline, attribute: .Left)
-        setFixedRelateConstraint(item: baseline, attribute: .Top)
-        setFixedConstantConstraint(item: baseline, attribute: .Width, constant: crossSpaceSize)
-        setFixedRelateConstraint(item: baseline, attribute: .Height)
     }
 
     required public init?(coder aDecoder: NSCoder) {
@@ -200,6 +252,7 @@ public extension UIView {
     public class func column(items: UIView...) -> CCFlexbox {
         let box = CCFlexbox.init(items: items)
         box.vertical = true
+        box.axisAttributes = AxisLayoutAttributes.init(vertical: true)
         box.setupItems()
         return box
     }
@@ -207,6 +260,7 @@ public extension UIView {
     public class func column(items: [UIView]) -> CCFlexbox {
         let box = CCFlexbox.init(items: items)
         box.vertical = true
+        box.axisAttributes = AxisLayoutAttributes.init(vertical: true)
         box.setupItems()
         return box
     }
@@ -224,536 +278,213 @@ public extension UIView {
     }
 
     private func setupItems() -> Void {
-        for var index = 0; index < items.count; index++ {
+        for index in 0 ..< items.count {
             let item = items[index]
-
-            //prevent content overflow on cross axis
-            if vertical {
-                setFixedRelateConstraint(item: item, attribute: .Width, constant: 0, relatedBy: .LessThanOrEqual, toItem: self, attribute: .Width, multiplier: 1, priority: 999)
-            } else {
-                setFixedRelateConstraint(item: item, attribute: .Height, constant: 0, relatedBy: .LessThanOrEqual, toItem: self, attribute: .Height, multiplier: 1, priority: 999)
-            }
-
-            let previousSpace = UIView.init()
-            previousSpace.translatesAutoresizingMaskIntoConstraints = false
-            previousSpace.backgroundColor = UIColor.redColor()
-            self.addSubview(previousSpace)
-            self.spaces.append(previousSpace)
-            if index > 0 {
-                let lastSpace = spaces[1 + (index-1)*2]
-                if vertical {
-                    setFixedRelateConstraint(item: previousSpace, attribute: .Top, toItem: lastSpace, attribute: .Bottom)
-                } else {
-                    setFixedRelateConstraint(item: previousSpace, attribute: .Left, toItem: lastSpace, attribute: .Right)
-                }
-            } else {
-                if vertical {
-                    setFixedRelateConstraint(item: previousSpace, attribute: .Top)
-                } else {
-                    setFixedRelateConstraint(item: previousSpace, attribute: .Left)
-                }
-            }
-            if vertical {
-                setFixedRelateConstraint(item: previousSpace, attribute: .Left)
-                setFixedConstantConstraint(item: previousSpace, attribute: .Width, constant: crossSpaceSize)
-            } else {
-                setFixedRelateConstraint(item: previousSpace, attribute: .Top)
-                setFixedConstantConstraint(item: previousSpace, attribute: .Height, constant: crossSpaceSize)
-            }
-
-            let previousMargin = UIView.init()
-            previousMargin.translatesAutoresizingMaskIntoConstraints = false
-            previousMargin.backgroundColor = UIColor.blueColor()
-            self.addSubview(previousMargin)
-            self.margins.append(previousMargin)
-            if vertical {
-                setFixedRelateConstraint(item: previousMargin, attribute: .Top, toItem: previousSpace, attribute: .Bottom)
-                setFixedRelateConstraint(item: previousMargin, attribute: .Bottom, toItem: item, attribute: .Top)
-                setFixedRelateConstraint(item: previousMargin, attribute: .Left)
-                setFixedConstantConstraint(item: previousMargin, attribute: .Width, constant: crossSpaceSize)
-                setFixedRelateConstraint(item: previousMargin, attribute: .Height, constant: 0, relatedBy: .LessThanOrEqual)
-            } else {
-                setFixedRelateConstraint(item: previousMargin, attribute: .Left, toItem: previousSpace, attribute: .Right)
-                setFixedRelateConstraint(item: previousMargin, attribute: .Right, toItem: item, attribute: .Left)
-                setFixedRelateConstraint(item: previousMargin, attribute: .Top)
-                setFixedConstantConstraint(item: previousMargin, attribute: .Height, constant: crossSpaceSize)
-                setFixedRelateConstraint(item: previousMargin, attribute: .Width, constant: 0, relatedBy: .LessThanOrEqual)
-            }
-
-            item.translatesAutoresizingMaskIntoConstraints = false
             self.addSubview(item)
-
-            let nextMargin = UIView.init()
-            nextMargin.translatesAutoresizingMaskIntoConstraints = false
-            nextMargin.backgroundColor = UIColor.yellowColor()
-            self.addSubview(nextMargin)
-            self.margins.append(nextMargin)
-            if vertical {
-                setFixedRelateConstraint(item: nextMargin, attribute: .Top, toItem: item, attribute: .Bottom)
-                setFixedRelateConstraint(item: nextMargin, attribute: .Left)
-                setFixedConstantConstraint(item: nextMargin, attribute: .Width, constant: crossSpaceSize)
-                setFixedRelateConstraint(item: nextMargin, attribute: .Height, constant: 0, relatedBy: .LessThanOrEqual)
-            } else {
-                setFixedRelateConstraint(item: nextMargin, attribute: .Left, toItem: item, attribute: .Right)
-                setFixedRelateConstraint(item: nextMargin, attribute: .Top)
-                setFixedConstantConstraint(item: nextMargin, attribute: .Height, constant: crossSpaceSize)
-                setFixedRelateConstraint(item: nextMargin, attribute: .Width, constant: 0, relatedBy: .LessThanOrEqual)
-            }
-
-            let nextSpace = UIView.init()
-            nextSpace.translatesAutoresizingMaskIntoConstraints = false
-            nextSpace.backgroundColor = UIColor.greenColor()
-            self.addSubview(nextSpace)
-            self.spaces.append(nextSpace)
-            if vertical {
-                setFixedRelateConstraint(item: nextSpace, attribute: .Top, toItem: nextMargin, attribute: .Bottom)
-                setFixedRelateConstraint(item: nextSpace, attribute: .Left)
-                setFixedConstantConstraint(item: nextSpace, attribute: .Width, constant: crossSpaceSize)
-                if index == items.count - 1 {
-                    //prevent content overflow on main axis
-                    setFixedRelateConstraint(item: nextSpace, attribute: .Bottom, constant: 0, relatedBy: .Equal, toItem: self, attribute: .Bottom, multiplier: 1, priority: 999)
-                }
-            } else {
-                setFixedRelateConstraint(item: nextSpace, attribute: .Left, toItem: nextMargin, attribute: .Right)
-                setFixedRelateConstraint(item: nextSpace, attribute: .Top)
-                setFixedConstantConstraint(item: nextSpace, attribute: .Height, constant: crossSpaceSize)
-                if index == items.count - 1 {
-                    //prevent content overflow on main axis
-                    setFixedRelateConstraint(item: nextSpace, attribute: .Right, constant: 0, relatedBy: .Equal, toItem: self, attribute: .Right, multiplier: 1, priority: 999)
-                }
-            }
+            item.translatesAutoresizingMaskIntoConstraints = false
         }
     }
 
     override public func updateConstraints() {
         clearFlexConstraints(self)
-        if vertical {
-            updateVerticalConstraints()
-        } else {
-            updateHorizontalConstraints()
-        }
+        applyFlexLayout()
         super.updateConstraints()
         self.updateConstraintsCount += 1
     }
 
-    private func updateHorizontalConstraints() {
+    private func applyFlexLayout() {
         var grows = 0
+        var autoMarginCount = 0
         for item in items {
             let grow = getFlexGrowForItem(item)
             grows += grow
+            let margin = getAxisMarginsForItem(item)
+            if margin.mainPrevious == MarginAuto {
+                autoMarginCount += 1
+            }
+            if margin.mainNext == MarginAuto {
+                autoMarginCount += 1
+            }
         }
 
-        var autoMargins:[UIView] = []
-        for var index = 0; index < items.count; index++ {
+        for subview in self.subviews {
+            if subview is CCLayoutGuide {
+                subview.removeFromSuperview()
+                clearFlexConstraints(subview)
+            }
+        }
+        baseline.removeFromSuperview()
+        clearFlexConstraints(baseline)
+
+        var subviews:[UIView] = []
+        var autoSpaces:[UIView] = []
+
+        var lastNextMargin:CGFloat = 0
+        for index in 0 ..< items.count {
             let item = items[index]
             clearFlexConstraints(item)
 
-            let basis = getFlexBasisForItem(item)
+            let basis = getAxisBasisForItem(item)
             let grow = max(getFlexGrowForItem(item), 0)
             let shrink = max(getFlexShrinkForItem(item), 0)
-            if basis.width != UIViewNoIntrinsicMetric {
-                setConstantWidthConstraint(item, constant: basis.width, .GreaterThanOrEqual, Float(250-grow))
-                setConstantWidthConstraint(item, constant: basis.width, .Equal, Float(750-shrink))
+            if basis.mainBasis != UIViewNoIntrinsicMetric {
+                setConstantConstraint(item, attribute: axisAttributes.mainSize, constant: basis.mainBasis, .GreaterThanOrEqual, Float(250-grow))
+                setConstantConstraint(item, attribute: axisAttributes.mainSize, constant: basis.mainBasis, .Equal, Float(750-shrink))
 
                 //prevent content size changing bound size
-                item.setContentCompressionResistancePriority(1, forAxis: .Horizontal)
-                item.setContentHuggingPriority(1, forAxis: .Horizontal)
+                item.setContentCompressionResistancePriority(1, forAxis: axisAttributes.mainAxis)
+                item.setContentHuggingPriority(1, forAxis: axisAttributes.mainAxis)
             } else{
-                item.setContentCompressionResistancePriority(Float(750 - shrink), forAxis: .Horizontal) //no shrinking
-                item.setContentHuggingPriority(Float(251 - grow), forAxis: .Horizontal)//make sibing column's inner label width grow
+                item.setContentCompressionResistancePriority(Float(750 - shrink), forAxis: axisAttributes.mainAxis) //no shrinking
+                item.setContentHuggingPriority(Float(251 - grow), forAxis: axisAttributes.mainAxis)//make sibing column's inner label width grow
+            }
+
+            var margin = getAxisMarginsForItem(item)
+
+            let previousMargin = margin.mainPrevious == MarginAuto ? 0 : margin.mainPrevious
+            //no items can grow enabling auto margin
+            let insertLeftAutoSpace = autoMarginCount == 0 && grows == 0 && (
+                (justifyContent == .Center && index == 0) ||
+                    justifyContent == .SpaceAround ||
+                    justifyContent == .SpaceSeperate)
+
+            if (margin.mainPrevious == MarginAuto && grows == 0) || insertLeftAutoSpace {
+                let previousAutoSpace = CCLayoutGuide.init()
+                previousAutoSpace.backgroundColor = UIColor.blackColor()
+                previousAutoSpace.translatesAutoresizingMaskIntoConstraints = false
+                self.addSubview(previousAutoSpace)
+                setConstantConstraint(previousAutoSpace, attribute: axisAttributes.crossSize, constant: layoutGuideSize)
+
+                if subviews.count > 0 {
+                    setAlignConstraint(item: previousAutoSpace, attribute: axisAttributes.mainPrevious, constant: 0, relatedBy: .Equal, toItem: subviews.last!, attribute: axisAttributes.mainNext, priority: UILayoutPriorityRequired)
+                } else {
+                    setAlignConstraint(item: previousAutoSpace, attribute: axisAttributes.mainPrevious, constant: 0, relatedBy: .Equal, toItem: self, attribute: axisAttributes.mainPrevious, priority: UILayoutPriorityRequired)
+                }
+                subviews.append(previousAutoSpace)
+
+                autoSpaces.append(previousAutoSpace)
+            }
+            if subviews.count > 0 {
+                setAlignConstraint(item: item, attribute: axisAttributes.mainPrevious, constant: previousMargin + lastNextMargin, relatedBy: .Equal, toItem: subviews.last!, attribute: axisAttributes.mainNext, priority: UILayoutPriorityRequired)
+            } else {
+                if justifyContent == .FlexEnd {
+                    setAlignConstraint(item: item, attribute: axisAttributes.mainPrevious, constant: previousMargin, relatedBy: .GreaterThanOrEqual, toItem: self, attribute: axisAttributes.mainPrevious, priority: 999)
+                    setAlignConstraint(item: item, attribute: axisAttributes.mainPrevious, constant: previousMargin, relatedBy: .Equal, toItem: self, attribute: axisAttributes.mainPrevious, priority: UILayoutPriorityDefaultLow)
+                } else {
+                    setAlignConstraint(item: item, attribute: axisAttributes.mainPrevious, constant: previousMargin, relatedBy: .Equal, toItem: self, attribute: axisAttributes.mainPrevious, priority: UILayoutPriorityRequired)
+                }
+
+            }
+            subviews.append(item)
+
+            lastNextMargin = margin.mainNext == MarginAuto ? 0 : margin.mainNext
+
+            let insertRightAutoSpace = autoMarginCount == 0 && grows == 0 && (
+                (justifyContent == .Center && index == items.count - 1) ||
+                    (justifyContent == .SpaceBetween && index < items.count - 1) ||
+                    justifyContent == .SpaceAround ||
+                    (justifyContent == .SpaceSeperate && index == items.count - 1))
+
+            if (margin.mainNext == MarginAuto && grows == 0) || insertRightAutoSpace {
+                let nextAutoSpace = CCLayoutGuide.init()
+                nextAutoSpace.backgroundColor = UIColor.blackColor()
+                nextAutoSpace.translatesAutoresizingMaskIntoConstraints = false
+                self.addSubview(nextAutoSpace)
+                setConstantConstraint(nextAutoSpace, attribute: axisAttributes.crossSize, constant: layoutGuideSize)
+                setAlignConstraint(item: nextAutoSpace, attribute: axisAttributes.mainPrevious, constant: 0, relatedBy: .Equal, toItem: item, attribute: axisAttributes.mainNext, priority: UILayoutPriorityRequired)
+
+                if index == items.count - 1 {
+                    setAlignConstraint(item: nextAutoSpace, attribute: axisAttributes.mainNext, constant: 0, relatedBy: .Equal, toItem: self, attribute: axisAttributes.mainNext, priority: UILayoutPriorityRequired)
+                }
+                subviews.append(nextAutoSpace)
+                autoSpaces.append(nextAutoSpace)
+            } else {
+                if index == items.count - 1 {
+                    if justifyContent == .FlexEnd {
+                        setAlignConstraint(item: self, attribute: axisAttributes.mainNext, constant: lastNextMargin, relatedBy: .Equal, toItem: item, attribute: axisAttributes.mainNext, priority: UILayoutPriorityRequired)
+                    } else {
+                        setAlignConstraint(item: self, attribute: axisAttributes.mainNext, constant: lastNextMargin, relatedBy: .GreaterThanOrEqual, toItem: item, attribute: axisAttributes.mainNext, priority: 999)
+                        setAlignConstraint(item: self, attribute: axisAttributes.mainNext, constant: lastNextMargin, relatedBy: .Equal, toItem: item, attribute: axisAttributes.mainNext, priority: UILayoutPriorityDefaultLow)
+                    }
+
+                }
             }
 
             var align = getAlignSelfForItem(item)
             if align == .Auto {
                 align = alignItems
             }
-            var margin = getMarginForItem(item)
-            if margin.top == MarginAuto {
-                margin.top = 0
+            if margin.crossPrevious == MarginAuto {
+                margin.crossPrevious = 0
             }
-            if margin.bottom == MarginAuto {
-                margin.bottom = 0
+            if margin.crossNext == MarginAuto {
+                margin.crossNext = 0
             }
             switch align {
             case .FlexStart:
-                setAlignConstraint(item: item, attribute: .Top, constant: margin.top)
+                setAlignConstraint(item: item, attribute: axisAttributes.crossPrevious, constant: margin.crossPrevious)
                 break;
             case .FlexEnd:
-                setAlignConstraint(item: item, attribute: .Bottom, constant: -margin.bottom)
+                setAlignConstraint(item: item, attribute: axisAttributes.crossNext, constant: -margin.crossNext)
                 break;
             case .Center:
-                setAlignConstraint(item: item, attribute: .CenterY)
+                setAlignConstraint(item: item, attribute: axisAttributes.crossCenter)
                 break;
             case .Baseline:
-                setAlignConstraint(item: item, attribute: .Baseline, constant: 0, relatedBy: .Equal, toItem: baseline, attribute: .Baseline)
+                if !vertical {
+                    addSubview(baseline)
+                    baseline.translatesAutoresizingMaskIntoConstraints = false
+                    setAlignConstraint(item: baseline, attribute: axisAttributes.mainPrevious)
+                    setAlignConstraint(item: baseline, attribute: axisAttributes.crossPrevious)
+                    setAlignConstraint(item: baseline, attribute: axisAttributes.mainSize, constant: layoutGuideSize)
+                    setAlignConstraint(item: baseline, attribute: axisAttributes.crossSize)
+
+                    setAlignConstraint(item: item, attribute: .Baseline, constant: 0, relatedBy: .Equal, toItem: baseline, attribute: .Baseline)
+                }
                 break;
             case .Stretch, .Auto:
-                setAlignConstraint(item: item, attribute: .Top, constant: margin.top)
-                setAlignConstraint(item: item, attribute: .Bottom, constant: -margin.bottom)
+                setAlignConstraint(item: item, attribute: axisAttributes.crossPrevious, constant: margin.crossPrevious)
+                setAlignConstraint(item: item, attribute: axisAttributes.crossNext, constant: -margin.crossNext)
                 break;
             }
-            if align != .Stretch && align != .Auto && basis.height != UIViewNoIntrinsicMetric {
-                setConstantHeightConstraint(item, constant: basis.height, .GreaterThanOrEqual, 750)
-                setConstantHeightConstraint(item, constant: basis.height, .LessThanOrEqual, 750)
-                setConstantHeightConstraint(item, constant: basis.height, .Equal, 750)
+            if align != .Stretch && align != .Auto && basis.crossBasis != UIViewNoIntrinsicMetric {
+                setConstantConstraint(item, attribute: axisAttributes.crossSize, constant: basis.crossBasis, .GreaterThanOrEqual, 750)
+                setConstantConstraint(item, attribute: axisAttributes.crossSize, constant: basis.crossBasis, .LessThanOrEqual, 750)
+                setConstantConstraint(item, attribute: axisAttributes.crossSize, constant: basis.crossBasis, .Equal, 750)
             }
-
-            let leftMargin = self.margins[index * 2]
-            clearFlexConstraints(leftMargin)
-            if margin.left == MarginAuto {
-                autoMargins.append(leftMargin)
-            } else {
-                setConstantWidthConstraint(leftMargin, constant: margin.left)
-            }
-
-            let rightMargin = self.margins[1+index*2]
-            clearFlexConstraints(rightMargin)
-            if margin.right == MarginAuto {
-                autoMargins.append(rightMargin)
-            } else {
-                setConstantWidthConstraint(rightMargin, constant: margin.right)
-            }
+            setAlignConstraint(item: item, attribute: axisAttributes.crossSize, constant: 0, relatedBy: .LessThanOrEqual, toItem: self, attribute: axisAttributes.crossSize, priority: 999);
         }
-        if autoMargins.count > 0 {
-            //auto margins consume all extra space
-            let firstMargin = autoMargins.first!
-            if grows > 0 {
-                setConstantWidthConstraint(firstMargin, constant: 0)
-            } else {
-                setConstantWidthConstraint(firstMargin, constant: 0, .GreaterThanOrEqual)
-            }
 
-            for margin in autoMargins[1..<autoMargins.count] {
-                setRelateWidthConstraint(margin, target: firstMargin)
+        if autoSpaces.count > 0 {
+            //auto spaces consume all extra space
+            let firstSpace = autoSpaces.first!
+            setConstantConstraint(firstSpace, attribute: axisAttributes.mainSize, constant: 0, .GreaterThanOrEqual)
+
+            for space in autoSpaces[1..<autoSpaces.count] {
+                setAlignConstraint(item: space, attribute: axisAttributes.mainSize, constant: 0, relatedBy: .Equal, toItem: firstSpace, attribute: axisAttributes.mainSize)
             }
         }
 
-        if grows > 0 {
-            for var index = 0; index < spaces.count; index++ {
-                let space = spaces[index]
-                clearFlexConstraints(space)
-                setConstantWidthConstraint(space, constant: 0)
-            }
-        } else {
-            switch justifyContent {
-            case .FlexStart:
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                setConstantWidthConstraint(firstSpace, constant: 0)
-                let lastSpace = self.spaces.last!
-                clearFlexConstraints(lastSpace)
-                if autoMargins.count > 0 {
-                    setConstantWidthConstraint(lastSpace, constant: 0, .Equal)
-                } else {
-                    setConstantWidthConstraint(lastSpace, constant: 0, .GreaterThanOrEqual)
-                }
-                for var index = 1; index < spaces.count - 1; index++ {
-                    let space = spaces[index]
-                    clearFlexConstraints(space)
-                    setConstantWidthConstraint(space, constant: 0)
-                }
-                break
-            case .FlexEnd:
-                let lastSpace = self.spaces.last!
-                clearFlexConstraints(lastSpace)
-                setConstantWidthConstraint(lastSpace, constant: 0)
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                if autoMargins.count > 0 {
-                    setConstantWidthConstraint(firstSpace, constant: 0, .Equal)
-                } else {
-                    setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                }
-                for var index = 1; index < spaces.count - 1; index++ {
-                    let space = spaces[index]
-                    clearFlexConstraints(space)
-                    setConstantWidthConstraint(space, constant: 0)
-                }
-                break
-            case .Center:
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                if autoMargins.count > 0 {
-                    setConstantWidthConstraint(firstSpace, constant: 0, .Equal)
-                } else {
-                    setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                }
-
-                let lastSpace = self.spaces.last!
-                clearFlexConstraints(lastSpace)
-                setRelateWidthConstraint(lastSpace, target: firstSpace)
-
-                for var index = 1; index < spaces.count - 1; index++ {
-                    let space = spaces[index]
-                    clearFlexConstraints(space)
-                    setConstantWidthConstraint(space, constant: 0)
-                }
-                break
-            case .SpaceBetween:
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                setConstantWidthConstraint(firstSpace, constant: 0)
-
-                let lastSpace = self.spaces.last!
-                clearFlexConstraints(lastSpace)
-                setConstantWidthConstraint(lastSpace, constant: 0)
-
-                let secondSpace = spaces[1]
-                clearFlexConstraints(secondSpace)
-                if autoMargins.count > 0 {
-                    setConstantWidthConstraint(secondSpace, constant: 0, .Equal)
-                } else {
-                    setConstantWidthConstraint(secondSpace, constant: 0, .GreaterThanOrEqual)
-                }
-                for nextSpace in spaces[2..<spaces.count-1] {
-                    clearFlexConstraints(nextSpace)
-                    setRelateWidthConstraint(nextSpace, target: secondSpace)
-                }
-                break
-            case .SpaceAround:
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                if autoMargins.count > 0 {
-                    setConstantWidthConstraint(firstSpace, constant: 0, .Equal)
-                } else {
-                    setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                }
-
-                for nextSpace in spaces[1..<spaces.count] {
-                    clearFlexConstraints(nextSpace)
-                    setRelateWidthConstraint(nextSpace, target: firstSpace)
-                }
-                break
-            case .SpaceSeperate:
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                if autoMargins.count > 0 {
-                    setConstantWidthConstraint(firstSpace, constant: 0, .Equal)
-                } else {
-                    setConstantWidthConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                }
-
-                for nextSpace in spaces[1..<spaces.count-1] {
-                    clearFlexConstraints(nextSpace)
-                    setRelateWidthConstraint(firstSpace, target: nextSpace, multiplier: 2)
-                }
-
-                let lastSpace = self.spaces.last!
-                clearFlexConstraints(lastSpace)
-                setRelateWidthConstraint(lastSpace, target: firstSpace)
-                break
-            }
-        }
     }
 
-    private func updateVerticalConstraints() {
-        var grows = 0
-        for item in items {
-            let grow = getFlexGrowForItem(item)
-            grows += grow
-        }
-
-        var autoMargins:[UIView] = []
-        for var index = 0; index < items.count; index++ {
-            let item = items[index]
-            clearFlexConstraints(item)
-
-            let basis = getFlexBasisForItem(item)
-            let grow = getFlexGrowForItem(item)
-            let shrink = getFlexShrinkForItem(item)
-            if basis.height != UIViewNoIntrinsicMetric {
-                setConstantHeightConstraint(item, constant: basis.height, .GreaterThanOrEqual, Float(250-grow))
-                setConstantHeightConstraint(item, constant: basis.height, .Equal, Float(750-shrink))
-
-                //prevent content size changing bound size
-                item.setContentCompressionResistancePriority(1, forAxis: .Vertical)
-                item.setContentHuggingPriority(1, forAxis: .Vertical)
-            } else {
-                item.setContentCompressionResistancePriority(Float(750 - shrink), forAxis: .Vertical) //no shrinking
-                item.setContentHuggingPriority(Float(251 - grow), forAxis: .Vertical) //make sibling row's inner label height grow
-            }
-
-            var align = getAlignSelfForItem(item)
-            if align == .Auto {
-                align = alignItems
-            }
-            var margin = getMarginForItem(item)
-            if margin.left == MarginAuto {
-                margin.left = 0
-            }
-            if margin.right == MarginAuto {
-                margin.right = 0
-            }
-            switch align {
-            case .FlexStart:
-                setAlignConstraint(item: item, attribute: .Left, constant: margin.left)
-                break;
-            case .FlexEnd:
-                setAlignConstraint(item: item, attribute: .Right, constant: -margin.right)
-                break;
-            case .Center:
-                setAlignConstraint(item: item, attribute: .CenterX)
-                break;
-            case .Baseline, .Stretch, .Auto:
-                setAlignConstraint(item: item, attribute: .Left, constant: margin.left)
-                setAlignConstraint(item: item, attribute: .Right, constant: -margin.right)
-                break;
-            }
-            if align != .Stretch && align != .Auto && align != .Baseline && basis.width != UIViewNoIntrinsicMetric {
-                setConstantWidthConstraint(item, constant: basis.width, .GreaterThanOrEqual, 750)
-                setConstantWidthConstraint(item, constant: basis.width, .LessThanOrEqual, 750)
-                setConstantWidthConstraint(item, constant: basis.width, .Equal, 750)
-            }
-
-            let topMargin = self.margins[index * 2]
-            clearFlexConstraints(topMargin)
-            if margin.top == MarginAuto {
-                autoMargins.append(topMargin)
-            } else {
-                setConstantHeightConstraint(topMargin, constant: margin.top)
-            }
-            let bottomMargin = self.margins[1+index*2]
-            clearFlexConstraints(bottomMargin)
-            if margin.bottom == MarginAuto {
-                autoMargins.append(bottomMargin)
-            } else {
-                setConstantHeightConstraint(bottomMargin, constant: margin.bottom)
-            }
-        }
-        if autoMargins.count > 0 {
-            let firstMargin = autoMargins.first!
-            if grows > 0 {
-                setConstantHeightConstraint(firstMargin, constant: 0)
-            } else {
-                setConstantHeightConstraint(firstMargin, constant: 0, .GreaterThanOrEqual)
-            }
-
-            for margin in autoMargins[1..<autoMargins.count] {
-                setRelateHeightConstraint(margin, target: firstMargin)
-            }
-        }
-
-        if grows > 0 {
-            for var index = 0; index < spaces.count; index++ {
-                let space = spaces[index]
-                clearFlexConstraints(space)
-                setConstantHeightConstraint(space, constant: 0)
-            }
-        } else {
-            switch justifyContent {
-            case .FlexStart:
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                setConstantHeightConstraint(firstSpace, constant: 0)
-                let lastSpace = self.spaces.last!
-                clearFlexConstraints(lastSpace)
-                if autoMargins.count > 0 {
-                    setConstantHeightConstraint(lastSpace, constant: 0, .Equal)
-                } else {
-                    setConstantHeightConstraint(lastSpace, constant: 0, .GreaterThanOrEqual)
-                }
-                for var index = 1; index < spaces.count - 1; index++ {
-                    let space = spaces[index]
-                    clearFlexConstraints(space)
-                    setConstantHeightConstraint(space, constant: 0)
-                }
-                break
-            case .FlexEnd:
-                let lastSpace = self.spaces.last!
-                clearFlexConstraints(lastSpace)
-                setConstantHeightConstraint(lastSpace, constant: 0)
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                if autoMargins.count > 0 {
-                    setConstantHeightConstraint(firstSpace, constant: 0, .Equal)
-                } else {
-                    setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                }
-                for var index = 1; index < spaces.count - 1; index++ {
-                    let space = spaces[index]
-                    clearFlexConstraints(space)
-                    setConstantHeightConstraint(space, constant: 0)
-                }
-                break
-            case .Center:
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                if autoMargins.count > 0 {
-                    setConstantHeightConstraint(firstSpace, constant: 0, .Equal)
-                } else {
-                    setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                }
-
-                let lastSpace = self.spaces.last!
-                clearFlexConstraints(lastSpace)
-                setRelateHeightConstraint(lastSpace, target: firstSpace)
-
-                for var index = 1; index < spaces.count - 1; index++ {
-                    let space = spaces[index]
-                    clearFlexConstraints(space)
-                    setConstantHeightConstraint(space, constant: 0)
-                }
-                break
-            case .SpaceBetween:
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                setConstantHeightConstraint(firstSpace, constant: 0)
-
-                let lastSpace = self.spaces.last!
-                clearFlexConstraints(lastSpace)
-                setConstantHeightConstraint(lastSpace, constant: 0)
-
-                let secondSpace = spaces[1]
-                clearFlexConstraints(secondSpace)
-                if autoMargins.count > 0 {
-                    setConstantHeightConstraint(secondSpace, constant: 0, .Equal)
-                } else {
-                    setConstantHeightConstraint(secondSpace, constant: 0, .GreaterThanOrEqual)
-                }
-                for nextSpace in spaces[2..<spaces.count-1] {
-                    clearFlexConstraints(nextSpace)
-                    setRelateHeightConstraint(nextSpace, target: secondSpace)
-                }
-                break
-            case .SpaceAround:
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                if autoMargins.count > 0 {
-                    setConstantHeightConstraint(firstSpace, constant: 0, .Equal)
-                } else {
-                    setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                }
-
-                for nextSpace in spaces[1..<spaces.count] {
-                    clearFlexConstraints(nextSpace)
-                    setRelateHeightConstraint(nextSpace, target: firstSpace)
-                }
-                break
-            case .SpaceSeperate:
-                let firstSpace = self.spaces.first!
-                clearFlexConstraints(firstSpace)
-                if autoMargins.count > 0 {
-                    setConstantHeightConstraint(firstSpace, constant: 0, .Equal)
-                } else {
-                    setConstantHeightConstraint(firstSpace, constant: 0, .GreaterThanOrEqual)
-                }
-
-                for nextSpace in spaces[1..<spaces.count-1] {
-                    clearFlexConstraints(nextSpace)
-                    setRelateHeightConstraint(firstSpace, target: nextSpace, multiplier: 2)
-                }
-
-                let lastSpace = self.spaces.last!
-                clearFlexConstraints(lastSpace)
-                setRelateHeightConstraint(lastSpace, target: firstSpace)
-                break
-            }
-        }
-    }
-
-    private func getFlexBasisForItem(item:UIView) -> CGSize {
+    private func getAxisBasisForItem(item:UIView) -> AxisBasis {
         let basisValue = objc_getAssociatedObject(item, &FlexboxAssociatedKeys.flexBasis)
-        return basisValue == nil ? CGSizeMake(UIViewNoIntrinsicMetric, UIViewNoIntrinsicMetric) : basisValue.CGSizeValue()
+        let size = basisValue == nil ? CGSizeMake(UIViewNoIntrinsicMetric, UIViewNoIntrinsicMetric) : basisValue.CGSizeValue()
+        if vertical {
+            return AxisBasis.init(mainBasis: size.height, crossBasis: size.width)
+        } else {
+            return AxisBasis.init(mainBasis: size.width, crossBasis: size.height)
+        }
+    }
+
+    private func getAxisMarginsForItem(item:UIView) -> AxisMargins {
+        let marginValue = objc_getAssociatedObject(item, &FlexboxAssociatedKeys.ccMargin)
+        let edges = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
+        if vertical {
+            return AxisMargins.init(mainPrevious: edges.top, mainNext: edges.bottom, crossPrevious: edges.left, crossNext: edges.right)
+        } else {
+            return AxisMargins.init(mainPrevious: edges.left, mainNext: edges.right, crossPrevious: edges.top, crossNext: edges.bottom)
+        }
     }
 
     private func getFlexGrowForItem(item:UIView) -> Int {
@@ -771,11 +502,6 @@ public extension UIView {
         return alignValue == nil ? AlignItems.Auto : AlignItems(rawValue: alignValue.integerValue)!
     }
 
-    private func getMarginForItem(item:UIView) -> UIEdgeInsets {
-        let marginValue = objc_getAssociatedObject(item, &FlexboxAssociatedKeys.ccMargin)
-        return marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
-    }
-
     private func clearFlexConstraints(item:UIView) {
         let flexConstraints = item.constraints.filter { (constraint) -> Bool in
             return constraint.identifier == constraintIdentifier
@@ -787,8 +513,8 @@ public extension UIView {
         }
     }
 
-    private func setConstantWidthConstraint(item:UIView, constant:CGFloat, _ relation:NSLayoutRelation = .Equal, _ priority:UILayoutPriority = UILayoutPriorityRequired) {
-        let constraint = NSLayoutConstraint(item: item, attribute: .Width, relatedBy: relation, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: constant)
+    private func setConstantConstraint(item:UIView, attribute: NSLayoutAttribute, constant:CGFloat, _ relation:NSLayoutRelation = .Equal, _ priority:UILayoutPriority = UILayoutPriorityRequired) {
+        let constraint = NSLayoutConstraint(item: item, attribute: attribute, relatedBy: relation, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: constant)
         constraint.priority = priority
         constraint.identifier = constraintIdentifier
         if #available(iOS 8.0, *) {
@@ -798,46 +524,8 @@ public extension UIView {
         }
     }
 
-    private func setRelateWidthConstraint(item:UIView, target:UIView, multiplier:CGFloat = 1, relatedBy: NSLayoutRelation = .Equal) {
-        let constraint = NSLayoutConstraint(item: item, attribute: .Width, relatedBy: relatedBy, toItem: target, attribute: .Width, multiplier: multiplier, constant: 0)
-        constraint.identifier = constraintIdentifier
-        if #available(iOS 8.0, *) {
-            constraint.active = true
-        } else {
-            item.addConstraint(constraint)
-        }
-    }
-
-    private func setConstantHeightConstraint(item:UIView, constant:CGFloat, _ relation:NSLayoutRelation = .Equal, _ priority:UILayoutPriority = UILayoutPriorityRequired) {
-        let constraint = NSLayoutConstraint(item: item, attribute: .Height, relatedBy: relation, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: constant)
-        constraint.priority = priority
-        constraint.identifier = constraintIdentifier
-        if #available(iOS 8.0, *) {
-            constraint.active = true
-        } else {
-            item.addConstraint(constraint)
-        }
-    }
-
-    private func setRelateHeightConstraint(item:UIView, target:UIView, multiplier:CGFloat = 1, relatedBy: NSLayoutRelation = .Equal, priority:UILayoutPriority = UILayoutPriorityRequired, constant:CGFloat = 0) {
-        let constraint = NSLayoutConstraint(item: item, attribute: .Height, relatedBy: relatedBy, toItem: target, attribute: .Height, multiplier: multiplier, constant: constant)
-        constraint.identifier = constraintIdentifier
-        constraint.priority = priority
-        if #available(iOS 8.0, *) {
-            constraint.active = true
-        } else {
-            item.addConstraint(constraint)
-        }
-    }
-
-    private func setAlignConstraint(item view1: AnyObject, attribute attr1: NSLayoutAttribute, constant c: CGFloat = 0, relatedBy relation: NSLayoutRelation = .Equal, var toItem view2: AnyObject? = nil, var attribute attr2: NSLayoutAttribute? = nil, priority:UILayoutPriority = UILayoutPriorityRequired){
-        if view2 == nil {
-            view2 = self
-        }
-        if attr2 == nil {
-            attr2 = attr1
-        }
-        let constraint = NSLayoutConstraint(item: view1, attribute: attr1, relatedBy: relation, toItem: view2!, attribute: attr2!, multiplier: 1, constant:c)
+    private func setAlignConstraint(item view1: AnyObject, attribute attr1: NSLayoutAttribute, constant c: CGFloat = 0, relatedBy relation: NSLayoutRelation = .Equal, toItem view2: AnyObject, attribute attr2: NSLayoutAttribute, priority:UILayoutPriority = UILayoutPriorityRequired){
+        let constraint = NSLayoutConstraint(item: view1, attribute: attr1, relatedBy: relation, toItem: view2, attribute: attr2, multiplier: 1, constant:c)
         constraint.identifier = constraintIdentifier
         constraint.priority = priority
         if #available(iOS 8.0, *) {
@@ -847,43 +535,7 @@ public extension UIView {
         }
     }
 
-    private func setFixedRelateConstraint(item view1: AnyObject, attribute attr1: NSLayoutAttribute, constant c: CGFloat = 0, relatedBy relation: NSLayoutRelation = .Equal, var toItem view2: AnyObject? = nil, var attribute attr2: NSLayoutAttribute? = nil, multiplier:CGFloat = 1, priority:UILayoutPriority = UILayoutPriorityRequired) {
-        if view2 == nil {
-            view2 = self
-        }
-        if attr2 == nil {
-            attr2 = attr1
-        }
-        let constraint = NSLayoutConstraint(item: view1, attribute: attr1, relatedBy: relation, toItem: view2!, attribute: attr2!, multiplier: multiplier, constant: c)
-        constraint.priority = priority
-        constraint.identifier = "fixed"
-        if #available(iOS 8.0, *) {
-            constraint.active = true
-        } else {
-            view1.addConstraint(constraint)
-        }
-    }
-
-    private func setFixedRelateConstraint(item view1: AnyObject, attribute attr1: NSLayoutAttribute, toItem view2: AnyObject, attribute attr2: NSLayoutAttribute) {
-        setFixedRelateConstraint(item: view1, attribute: attr1, constant: 0, relatedBy: .Equal, toItem: view2, attribute: attr2, multiplier: 1, priority: UILayoutPriorityRequired)
-    }
-
-    private func setFixedConstantConstraint(item view1: AnyObject, attribute attr1: NSLayoutAttribute, constant c: CGFloat, priority:UILayoutPriority = UILayoutPriorityRequired) {
-        let constraint = NSLayoutConstraint(item: view1, attribute: attr1, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: c)
-        constraint.priority = priority
-        constraint.identifier = "fixed"
-        if #available(iOS 8.0, *) {
-            constraint.active = true
-        } else {
-            view1.addConstraint(constraint)
-        }
-    }
-
-    private func clearHeightConstraints(item:UIView) {
-        for constraint in item.constraints {
-            if constraint.firstAttribute == .Height {
-                item.removeConstraint(constraint)
-            }
-        }
+    private func setAlignConstraint(item view1: AnyObject, attribute attr1: NSLayoutAttribute, constant c: CGFloat = 0, relatedBy relation: NSLayoutRelation = .Equal){
+        setAlignConstraint(item: view1, attribute: attr1, constant: c, relatedBy: relation, toItem: self, attribute: attr1)
     }
 }
