@@ -72,24 +72,24 @@ class MasterViewController: UITableViewController {
             label1.text = "--row--"
             label1.backgroundColor = UIColor.lightGrayColor()
             let flexbox = CCFlexbox.row(
-                img.ccLeft(10), label.ccLeft(10).flexGrow(0), label1.ccLeft(10).ccRight(10)
+                img.cfb_left(10), label.cfb_left(10).cfb_flexGrow(0), label1.cfb_left(10).cfb_right(10)
                 ).justifyContent(justify)
             flexbox.tag = 1
             cell.contentView.addSubview(flexbox)
             alignFrame(flexbox, view2: cell.contentView)
             for _ in 1...5 {
-                img.flexBasis(40, 40)
+                img.cfb_flexBasis(40, 40)
             }
         } else if indexPath.row == 6 {
             let label = UILabel.init()
             label.backgroundColor = UIColor.lightGrayColor()
-            label.text = "FlexGrow(0)"
+            label.text = "cfb_flexGrow(0)"
 
             let label2 = UILabel.init()
             label2.backgroundColor = UIColor.greenColor()
-            label2.text = "FlexGrow(1)"
+            label2.text = "cfb_flexGrow(1)"
             label2.textAlignment = .Center
-            label2.flexGrow(1)
+            label2.cfb_flexGrow(1)
 
             let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
@@ -97,13 +97,13 @@ class MasterViewController: UITableViewController {
         } else if indexPath.row == 7 {
             let label = UILabel.init()
             label.backgroundColor = UIColor.lightGrayColor()
-            label.text = "FlexGrow(1)"
+            label.text = "cfb_flexGrow(1)"
             label.textAlignment = .Center
-            label.flexGrow(1)
+            label.cfb_flexGrow(1)
 
             let label2 = UILabel.init()
             label2.backgroundColor = UIColor.greenColor()
-            label2.text = "FlexGrow(0)"
+            label2.text = "cfb_flexGrow(0)"
             
             let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
@@ -111,13 +111,13 @@ class MasterViewController: UITableViewController {
         } else if indexPath.row == 8 {
             let label = UILabel.init()
             label.backgroundColor = UIColor.lightGrayColor()
-            label.text = "FlexShrink(1): Lorem ipsum"
-            label.flexShrink(1)
+            label.text = "cfb_flexShrink(1): Lorem ipsum"
+            label.cfb_flexShrink(1)
 
             let label2 = UILabel.init()
             label2.tag = 1
             label2.backgroundColor = UIColor.greenColor()
-            label2.text = "FlexShrink(0): Lorem ipsum"
+            label2.text = "cfb_flexShrink(0): Lorem ipsum"
 
             let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
@@ -125,33 +125,33 @@ class MasterViewController: UITableViewController {
         } else if indexPath.row == 9 {
             let label = UILabel.init()
             label.backgroundColor = UIColor.lightGrayColor()
-            label.text = "FlexBasis(200, 0)"
+            label.text = "cfb_flexBasis(200, 0)"
             label.tag = 1
-            label.flexBasis(200, 0)
+            label.cfb_flexBasis(200, 0)
 
             let label2 = UILabel.init()
             label2.backgroundColor = UIColor.greenColor()
-            label2.text = "FlexShrink(1): Lorem ipsum"
-            label2.flexShrink(1)
+            label2.text = "cfb_flexShrink(1): Lorem ipsum"
+            label2.cfb_flexShrink(1)
 
             let flexbox = CCFlexbox.row(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
             alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 10 {
             let label = UILabel.init()
-            label.text = "ccLeft(10)"
+            label.text = "cfb_left(10)"
             label.backgroundColor = UIColor.lightGrayColor()
-            label.ccLeft(10)
+            label.cfb_left(10)
 
             let label2 = UILabel.init()
             label2.backgroundColor = UIColor.greenColor()
-            label2.text = "ccLeft(20)"
-            label2.ccLeft(20)
+            label2.text = "cfb_left(20)"
+            label2.cfb_left(20)
 
             let label3 = UILabel.init()
-            label3.text = "ccLeftAuto"
+            label3.text = "cfb_leftAuto"
             label3.backgroundColor = UIColor.lightGrayColor()
-            label3.ccLeftAuto()
+            label3.cfb_leftAuto()
 
             let flexbox = CCFlexbox.row(label, label2, label3).justifyContent(.FlexEnd)
             cell.contentView.addSubview(flexbox)
@@ -160,27 +160,27 @@ class MasterViewController: UITableViewController {
             let label = UILabel.init()
             label.text = "FlexStart"
             label.backgroundColor = UIColor.lightGrayColor()
-            label.alignSelf(.FlexStart)
+            label.cfb_alignSelf(.FlexStart)
 
             let label2 = UILabel.init()
             label2.backgroundColor = UIColor.greenColor()
             label2.text = "FlexEnd"
-            label2.alignSelf(.FlexEnd)
+            label2.cfb_alignSelf(.FlexEnd)
 
             let label3 = UILabel.init()
             label3.text = "Center"
             label3.backgroundColor = UIColor.lightGrayColor()
-            label3.alignSelf(.Center)
+            label3.cfb_alignSelf(.Center)
 
             let label4 = UILabel.init()
             label4.text = "Baseline"
             label4.backgroundColor = UIColor.greenColor()
-            label4.alignSelf(.Baseline)
+            label4.cfb_alignSelf(.Baseline)
 
             let label5 = UILabel.init()
             label5.text = "Stretch"
             label5.backgroundColor = UIColor.lightGrayColor()
-            label5.alignSelf(.Stretch)
+            label5.cfb_alignSelf(.Stretch)
 
             let flexbox = CCFlexbox.row(label, label2, label3, label4, label5).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
@@ -247,43 +247,43 @@ class MasterViewController: UITableViewController {
             alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 18 {
             let label = UILabel.init()
-            label.text = "FlexGrow(0)"
+            label.text = "cfb_flexGrow(0)"
             label.backgroundColor = UIColor.lightGrayColor()
-            label.flexGrow(0)
+            label.cfb_flexGrow(0)
 
             let label2 = UILabel.init()
-            label2.text = "FlexGrow(1)"
+            label2.text = "cfb_flexGrow(1)"
             label2.backgroundColor = UIColor.greenColor()
-            label2.flexGrow(1)
+            label2.cfb_flexGrow(1)
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
             alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 19 {
             let label = UILabel.init()
-            label.text = "FlexGrow(1)"
+            label.text = "cfb_flexGrow(1)"
             label.backgroundColor = UIColor.lightGrayColor()
-            label.flexGrow(1)
+            label.cfb_flexGrow(1)
 
             let label2 = UILabel.init()
-            label2.text = "FlexGrow(0)"
+            label2.text = "cfb_flexGrow(0)"
             label2.backgroundColor = UIColor.greenColor()
-            label2.flexGrow(0)
+            label2.cfb_flexGrow(0)
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
             alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 20 {
             let label = UILabel.init()
-            label.text = "FlexShrink(1)"
+            label.text = "cfb_flexShrink(1)"
             label.backgroundColor = UIColor.lightGrayColor()
-            label.flexShrink(1)
+            label.cfb_flexShrink(1)
 
             let label2 = UILabel.init()
-            label2.text = "FlexShrink(0)"
+            label2.text = "cfb_flexShrink(0)"
             label2.tag = 1
             label2.backgroundColor = UIColor.greenColor()
-            label2.flexShrink(0)
+            label2.cfb_flexShrink(0)
             label2.font = UIFont.systemFontOfSize(40)
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.FlexStart)
@@ -291,15 +291,15 @@ class MasterViewController: UITableViewController {
             alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 21 {
             let label = UILabel.init()
-            label.text = "FlexBasis(0, 50)"
+            label.text = "cfb_flexBasis(0, 50)"
             label.tag = 1
             label.backgroundColor = UIColor.lightGrayColor()
-            label.flexBasis(0, 50)
+            label.cfb_flexBasis(0, 50)
 
             let label2 = UILabel.init()
-            label2.text = "FlexShrink(1)"
+            label2.text = "cfb_flexShrink(1)"
             label2.backgroundColor = UIColor.greenColor()
-            label2.flexShrink(1)
+            label2.cfb_flexShrink(1)
 
             let flexbox = CCFlexbox.column(label, label2).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
@@ -308,34 +308,34 @@ class MasterViewController: UITableViewController {
             let label = UILabel.init()
             label.text = "ccTop(5)"
             label.backgroundColor = UIColor.lightGrayColor()
-            label.ccTop(5)
+            label.cfb_top(5)
 
             let label3 = UILabel.init()
             label3.text = "ccTopAuto"
             label3.backgroundColor = UIColor.lightGrayColor()
-            label3.ccTopAuto()
+            label3.cfb_topAuto()
 
             let flexbox = CCFlexbox.column(label, label3).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
             alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 23 {
             let label = UILabel.init()
-            label.text = "alignSelf(.FlexStart)"
+            label.text = "cfb_alignSelf(.FlexStart)"
             label.backgroundColor = UIColor.lightGrayColor()
             label.font = UIFont.systemFontOfSize(12)
-            label.alignSelf(.FlexStart)
+            label.cfb_alignSelf(.FlexStart)
 
             let label2 = UILabel.init()
             label2.backgroundColor = UIColor.greenColor()
             label2.font = UIFont.systemFontOfSize(10)
             label2.text = "FlexEnd"
-            label2.alignSelf(.FlexEnd)
+            label2.cfb_alignSelf(.FlexEnd)
 
             let label3 = UILabel.init()
             label3.text = "Center"
             label3.font = UIFont.systemFontOfSize(12)
             label3.backgroundColor = UIColor.lightGrayColor()
-            label3.alignSelf(.Center)
+            label3.cfb_alignSelf(.Center)
 
             let flexbox = CCFlexbox.column(label, label2, label3).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
@@ -345,17 +345,17 @@ class MasterViewController: UITableViewController {
             let label3 = UILabel.init()
             label3.text = "Auto"
             label3.backgroundColor = UIColor.lightGrayColor()
-            label3.alignSelf(.Auto)
+            label3.cfb_alignSelf(.Auto)
 
             let label4 = UILabel.init()
             label4.text = "Baseline: N/A"
             label4.backgroundColor = UIColor.greenColor()
-            label4.alignSelf(.Baseline)
+            label4.cfb_alignSelf(.Baseline)
 
             let label5 = UILabel.init()
             label5.text = "Stretch"
             label5.backgroundColor = UIColor.lightGrayColor()
-            label5.alignSelf(.Stretch)
+            label5.cfb_alignSelf(.Stretch)
 
             let flexbox = CCFlexbox.column(label3, label4, label5).justifyContent(.FlexStart)
             cell.contentView.addSubview(flexbox)
@@ -363,7 +363,7 @@ class MasterViewController: UITableViewController {
         } else if indexPath.row == 25 {
 
             let img = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
-            img.flexBasis(40, 40)
+            img.cfb_flexBasis(40, 40)
 
             let label1 = UILabel.init()
             label1.text = "Title"
@@ -372,16 +372,16 @@ class MasterViewController: UITableViewController {
             label2.text = "Subtitle"
 
             let label3 = UILabel.init()
-            label3.text = "flexGrow(1)"
+            label3.text = "cfb_flexGrow(1)"
             label3.backgroundColor = UIColor.lightGrayColor()
             label3.tag = 1
 
             let column = CCFlexbox.column(label1, label2)
             column.backgroundColor = UIColor.darkGrayColor()
             column.justifyContent(.SpaceSeperate)
-            column.alignSelf(.Stretch)
+            column.cfb_alignSelf(.Stretch)
 
-            let flexbox = CCFlexbox.row(img.ccLeft(8), column.ccLeft(8).ccRight(8), label3.ccRight(8).flexGrow(1)).alignItems(.Center)
+            let flexbox = CCFlexbox.row(img.cfb_left(8), column.cfb_left(8).cfb_right(8), label3.cfb_right(8).cfb_flexGrow(1)).alignItems(.Center)
             cell.contentView.addSubview(flexbox)
             alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 26 {
@@ -420,7 +420,7 @@ class MasterViewController: UITableViewController {
             label1.backgroundColor = UIColor.lightGrayColor()
 
             let colimg = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
-            colimg.flexBasis(20, 20)
+            colimg.cfb_flexBasis(20, 20)
 
             let label3 = UILabel.init()
             label3.text = "col1"
@@ -431,16 +431,16 @@ class MasterViewController: UITableViewController {
             let label5 = UILabel.init()
             label5.text = "col3"
 
-            let column = CCFlexbox.column(label1, colimg, CCFlexbox.row(label3, label4, label5).alignItems(.Center).justifyContent(.SpaceSeperate).alignSelf(.Stretch)).justifyContent(.SpaceBetween).alignItems(.Center)
+            let column = CCFlexbox.column(label1, colimg, CCFlexbox.row(label3, label4, label5).alignItems(.Center).justifyContent(.SpaceSeperate).cfb_alignSelf(.Stretch)).justifyContent(.SpaceBetween).alignItems(.Center)
             column.backgroundColor = UIColor.darkGrayColor()
 
             let img = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
-            img.flexBasis(40, 40)
+            img.cfb_flexBasis(40, 40)
 
             let img2 = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
-            img2.flexBasis(40, 40)
+            img2.cfb_flexBasis(40, 40)
 
-            let row = CCFlexbox.row(img.ccLeft(16), column.ccLeft(16).flexGrow(1).alignSelf(.Stretch), img2.ccRight(12)).alignItems(.Center)
+            let row = CCFlexbox.row(img.cfb_left(16), column.cfb_left(16).cfb_flexGrow(1).cfb_alignSelf(.Stretch), img2.cfb_right(12)).alignItems(.Center)
             cell.contentView.addSubview(row)
             alignFrame(row, view2: cell.contentView)
         } else if indexPath.row == 28 {
@@ -470,7 +470,7 @@ class MasterViewController: UITableViewController {
             label1.backgroundColor = UIColor.lightGrayColor()
 
             let colimg = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
-            colimg.flexBasis(40, 40)
+            colimg.cfb_flexBasis(40, 40)
 
             let label3 = UILabel.init()
             label3.text = "row2"
@@ -480,12 +480,12 @@ class MasterViewController: UITableViewController {
             label4.text = "col2 grow(0)"
             label4.tag = 1
 
-            let column = CCFlexbox.column(label1, label3.alignSelf(.Center))
+            let column = CCFlexbox.column(label1, label3.cfb_alignSelf(.Center))
 
             let img = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
-            img.flexBasis(40, 40)
+            img.cfb_flexBasis(40, 40)
 
-            let row = CCFlexbox.row(img.ccLeft(16), column.ccLeft(16).flexGrow(1), label4.ccLeft(12)).alignItems(.Center)
+            let row = CCFlexbox.row(img.cfb_left(16), column.cfb_left(16).cfb_flexGrow(1), label4.cfb_left(12)).alignItems(.Center)
             cell.contentView.addSubview(row)
             alignFrame(row, view2: cell.contentView)
         } else if indexPath.row == 30 {
@@ -495,7 +495,7 @@ class MasterViewController: UITableViewController {
             label1.backgroundColor = UIColor.lightGrayColor()
 
             let colimg = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
-            colimg.flexBasis(20, 20)
+            colimg.cfb_flexBasis(20, 20)
 
             let label3 = UILabel.init()
             label3.text = "col2"
@@ -505,7 +505,7 @@ class MasterViewController: UITableViewController {
 
             let row = CCFlexbox.row(label1, label3)
 
-            let column = CCFlexbox.column(colimg, row.flexGrow(1), label4).alignItems(.Center)
+            let column = CCFlexbox.column(colimg, row.cfb_flexGrow(1), label4).alignItems(.Center)
             cell.contentView.addSubview(column)
             alignFrame(column, view2: cell.contentView)
         } else if indexPath.row == 31 {
@@ -534,13 +534,13 @@ class MasterViewController: UITableViewController {
             label6.text = "row3.column2"
             label6.font = UIFont.systemFontOfSize(14)
 
-            let row1 = CCFlexbox.row(label1, label2.ccLeft(5))
+            let row1 = CCFlexbox.row(label1, label2.cfb_left(5))
             row1.backgroundColor = UIColor.lightGrayColor()
 
-            let row3 = CCFlexbox.row(label5, label6.ccLeft(5))
+            let row3 = CCFlexbox.row(label5, label6.cfb_left(5))
             row3.backgroundColor = UIColor.darkGrayColor()
 
-            let flexbox = CCFlexbox.column(row1, CCFlexbox.row(label3, label4.ccLeft(5)), row3).justifyContent(.SpaceBetween).alignItems(.Center)
+            let flexbox = CCFlexbox.column(row1, CCFlexbox.row(label3, label4.cfb_left(5)), row3).justifyContent(.SpaceBetween).alignItems(.Center)
             cell.contentView.addSubview(flexbox)
             alignFrame(flexbox, view2: cell.contentView)
         }
@@ -557,62 +557,62 @@ class MasterViewController: UITableViewController {
         } else if indexPath.row == 8 {
             let cell = tableView.cellForRowAtIndexPath(indexPath)!
             if let label:UILabel = cell.contentView.viewWithTag(1) as? UILabel {
-                if label.text == "FlexShrink(0): Lorem ipsum" {
-                    label.flexShrink(2)
-                    label.text = "FlexShrink(2): Lorem ipsum"
+                if label.text == "cfb_flexShrink(0): Lorem ipsum" {
+                    label.cfb_flexShrink(2)
+                    label.text = "cfb_flexShrink(2): Lorem ipsum"
                 } else {
-                    label.flexShrink(0)
-                    label.text = "FlexShrink(0): Lorem ipsum"
+                    label.cfb_flexShrink(0)
+                    label.text = "cfb_flexShrink(0): Lorem ipsum"
                 }
             }
         }else if indexPath.row == 9 {
             let cell = tableView.cellForRowAtIndexPath(indexPath)!
             let label = cell.contentView.viewWithTag(1) as! UILabel
-            if label.text == "FlexBasis(130, 0)" {
-                label.text = "FlexBasis(200, 0)"
-                label.flexBasis(200, 0)
+            if label.text == "cfb_flexBasis(130, 0)" {
+                label.text = "cfb_flexBasis(200, 0)"
+                label.cfb_flexBasis(200, 0)
             } else {
-                label.text = "FlexBasis(130, 0)"
-                label.flexBasis(130, 0)
+                label.text = "cfb_flexBasis(130, 0)"
+                label.cfb_flexBasis(130, 0)
             }
         }else if indexPath.row == 20 {
             let cell = tableView.cellForRowAtIndexPath(indexPath)!
             let label = cell.contentView.viewWithTag(1) as! UILabel
-            if label.text == "FlexShrink(0)" {
-                label.flexShrink(2)
-                label.text = "FlexShrink(2)"
+            if label.text == "cfb_flexShrink(0)" {
+                label.cfb_flexShrink(2)
+                label.text = "cfb_flexShrink(2)"
             } else {
-                label.flexShrink(0)
-                label.text = "FlexShrink(0)"
+                label.cfb_flexShrink(0)
+                label.text = "cfb_flexShrink(0)"
             }
         } else if indexPath.row == 21 {
             let cell = tableView.cellForRowAtIndexPath(indexPath)!
             let label = cell.contentView.viewWithTag(1) as! UILabel
-            if label.text == "FlexBasis(0, 20)" {
-                label.text = "FlexBasis(0, 50)"
-                label.flexBasis(0, 50)
+            if label.text == "cfb_flexBasis(0, 20)" {
+                label.text = "cfb_flexBasis(0, 50)"
+                label.cfb_flexBasis(0, 50)
             } else {
-                label.text = "FlexBasis(0, 20)"
-                label.flexBasis(0, 20)
+                label.text = "cfb_flexBasis(0, 20)"
+                label.cfb_flexBasis(0, 20)
             }
         } else if indexPath.row == 25 {
             let cell = tableView.cellForRowAtIndexPath(indexPath)!
             let label = cell.contentView.viewWithTag(1) as! UILabel
-            if label.text == "flexGrow(1)" {
-                label.flexGrow(0)
-                label.text = "flexGrow(0)"
+            if label.text == "cfb_flexGrow(1)" {
+                label.cfb_flexGrow(0)
+                label.text = "cfb_flexGrow(0)"
             } else {
-                label.flexGrow(1)
-                label.text = "flexGrow(1)"
+                label.cfb_flexGrow(1)
+                label.text = "cfb_flexGrow(1)"
             }
         } else if indexPath.row == 29 {
             let cell = tableView.cellForRowAtIndexPath(indexPath)!
             let label = cell.contentView.viewWithTag(1) as! UILabel
             if label.text == "col2 grow(0)" {
-                label.flexGrow(2)
+                label.cfb_flexGrow(2)
                 label.text = "col2 grow(2)"
             } else {
-                label.flexGrow(0)
+                label.cfb_flexGrow(0)
                 label.text = "col2 grow(0)"
             }
         }

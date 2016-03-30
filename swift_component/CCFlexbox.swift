@@ -10,12 +10,11 @@ import UIKit
 import ObjectiveC
 
 private struct FlexboxAssociatedKeys {
-    static var flexGrow = "flexGrow"
-    static var flexShrink = "flexShrink"
-    static var flexBasis = "flexBasis"
-    static var flex = "flex"
-    static var alignSelf = "alignSelf"
-    static var ccMargin = "ccMargin"
+    static var flexGrow = "cfb_flexGrow"
+    static var flexShrink = "cfb_flexShrink"
+    static var flexBasis = "cfb_flexBasis"
+    static var alignSelf = "cfb_alignSelf"
+    static var margin = "cfb_margin"
 }
 
 private struct AxisLayoutAttributes {
@@ -73,7 +72,7 @@ public let MarginAuto:CGFloat = CGFloat.max
 
 public extension UIView {
 
-    func flexBasis(size:CGSize) -> UIView {
+    func cfb_flexBasis(size:CGSize) -> UIView {
         objc_setAssociatedObject(self, &FlexboxAssociatedKeys.flexBasis, NSValue.init(CGSize: size), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         if let parent = superview {
             parent.setNeedsUpdateConstraints()
@@ -81,7 +80,7 @@ public extension UIView {
         return self
     }
 
-    func flexBasis(width:CGFloat, height:CGFloat) -> UIView {
+    func cfb_flexBasis(width:CGFloat, height:CGFloat) -> UIView {
         objc_setAssociatedObject(self, &FlexboxAssociatedKeys.flexBasis, NSValue.init(CGSize: CGSizeMake(width, height)), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         if let parent = superview {
             parent.setNeedsUpdateConstraints()
@@ -89,7 +88,7 @@ public extension UIView {
         return self
     }
 
-    func flexBasis(width:CGFloat, _ height:CGFloat) -> UIView {
+    func cfb_flexBasis(width:CGFloat, _ height:CGFloat) -> UIView {
         objc_setAssociatedObject(self, &FlexboxAssociatedKeys.flexBasis, NSValue.init(CGSize: CGSizeMake(width, height)), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         if let parent = superview {
             parent.setNeedsUpdateConstraints()
@@ -97,7 +96,7 @@ public extension UIView {
         return self
     }
 
-    func flexGrow(grow:Int) -> UIView {
+    func cfb_flexGrow(grow:Int) -> UIView {
         objc_setAssociatedObject(self, &FlexboxAssociatedKeys.flexGrow, NSNumber.init(long: grow), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         if let parent = superview {
             parent.setNeedsUpdateConstraints()
@@ -105,7 +104,7 @@ public extension UIView {
         return self
     }
 
-    func flexShrink(shrink:Int) -> UIView {
+    func cfb_flexShrink(shrink:Int) -> UIView {
         objc_setAssociatedObject(self, &FlexboxAssociatedKeys.flexShrink, NSNumber.init(long: shrink), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         if let parent = superview {
             parent.setNeedsUpdateConstraints()
@@ -113,7 +112,7 @@ public extension UIView {
         return self
     }
 
-    func alignSelf(align:AlignItems) -> UIView {
+    func cfb_alignSelf(align:AlignItems) -> UIView {
         objc_setAssociatedObject(self, &FlexboxAssociatedKeys.alignSelf, NSNumber.init(long: align.rawValue), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         if let parent = superview {
             parent.setNeedsUpdateConstraints()
@@ -121,75 +120,75 @@ public extension UIView {
         return self
     }
 
-    func ccMargin(margin:UIEdgeInsets) -> UIView {
-        objc_setAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin, NSValue.init(UIEdgeInsets: margin), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    func cfb_margin(margin:UIEdgeInsets) -> UIView {
+        objc_setAssociatedObject(self, &FlexboxAssociatedKeys.margin, NSValue.init(UIEdgeInsets: margin), objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         if let parent = superview {
             parent.setNeedsUpdateConstraints()
         }
         return self
     }
 
-    func ccTop(top:CGFloat) -> UIView {
-        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+    func cfb_top(top:CGFloat) -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.margin)
         var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.top = top
-        ccMargin(margin)
+        cfb_margin(margin)
         return self
     }
 
-    func ccLeft(left:CGFloat) -> UIView {
-        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+    func cfb_left(left:CGFloat) -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.margin)
         var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.left = left
-        ccMargin(margin)
+        cfb_margin(margin)
         return self
     }
 
-    func ccBottom(bottom:CGFloat) -> UIView {
-        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+    func cfb_bottom(bottom:CGFloat) -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.margin)
         var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.bottom = bottom
-        ccMargin(margin)
+        cfb_margin(margin)
         return self
     }
 
-    func ccRight(right:CGFloat) -> UIView {
-        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+    func cfb_right(right:CGFloat) -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.margin)
         var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.right = right
-        ccMargin(margin)
+        cfb_margin(margin)
         return self
     }
 
-    func ccTopAuto() -> UIView {
-        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+    func cfb_topAuto() -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.margin)
         var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.top = MarginAuto
-        ccMargin(margin)
+        cfb_margin(margin)
         return self
     }
 
-    func ccLeftAuto() -> UIView {
-        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+    func cfb_leftAuto() -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.margin)
         var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.left = MarginAuto
-        ccMargin(margin)
+        cfb_margin(margin)
         return self
     }
 
-    func ccRightAuto() -> UIView {
-        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+    func cfb_rightAuto() -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.margin)
         var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.right = MarginAuto
-        ccMargin(margin)
+        cfb_margin(margin)
         return self
     }
 
-    func ccBottomAuto() -> UIView {
-        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.ccMargin)
+    func cfb_bottomAuto() -> UIView {
+        let marginValue = objc_getAssociatedObject(self, &FlexboxAssociatedKeys.margin)
         var margin = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         margin.bottom = MarginAuto
-        ccMargin(margin)
+        cfb_margin(margin)
         return self
     }
 }
@@ -488,7 +487,7 @@ private class CCLabelLayoutGuide: UILabel {
     }
 
     private func getAxisMarginsForItem(item:UIView) -> AxisMargins {
-        let marginValue = objc_getAssociatedObject(item, &FlexboxAssociatedKeys.ccMargin)
+        let marginValue = objc_getAssociatedObject(item, &FlexboxAssociatedKeys.margin)
         let edges = marginValue == nil ? UIEdgeInsetsZero : marginValue.UIEdgeInsetsValue()
         if vertical {
             return AxisMargins.init(mainPrevious: edges.top, mainNext: edges.bottom, crossPrevious: edges.left, crossNext: edges.right)

@@ -30,9 +30,9 @@ class DemoViewController: UIViewController {
         item3!.backgroundColor = UIColor.redColor()
 
         flexBox = CCFlexbox.row(
-            item1!.flexBasis(50, 50),
+            item1!.cfb_flexBasis(50, 50),
             item2!,
-            item3!.flexBasis(80, 80)
+            item3!.cfb_flexBasis(80, 80)
         )
         flexBox!.layer.borderWidth = 0.5
         flexBox!.layer.borderColor = UIColor.init(white: 0, alpha: 0.1).CGColor
@@ -120,68 +120,68 @@ class DemoViewController: UIViewController {
     }
 
     @IBAction func marginTop0(sender: AnyObject) {
-        selectedItem!.ccTop(0)
+        selectedItem!.cfb_top(0)
     }
     @IBAction func marginTop10(sender: AnyObject) {
-        selectedItem!.ccTop(10)
+        selectedItem!.cfb_top(10)
     }
     @IBAction func marginBottom0(sender: AnyObject) {
-        selectedItem!.ccBottom(0)
+        selectedItem!.cfb_bottom(0)
     }
     @IBAction func marginBottom10(sender: AnyObject) {
-        selectedItem!.ccBottom(10)
+        selectedItem!.cfb_bottom(10)
     }
     @IBAction func marginLeft0(sender: AnyObject) {
-        selectedItem!.ccLeft(0)
+        selectedItem!.cfb_left(0)
     }
     @IBAction func marginLeft10(sender: AnyObject) {
-        selectedItem!.ccLeft(10)
+        selectedItem!.cfb_left(10)
     }
     @IBAction func marginLeftAuto(sender: AnyObject) {
-        selectedItem!.ccLeftAuto()
+        selectedItem!.cfb_leftAuto()
     }
     @IBAction func marginRight0(sender: AnyObject) {
-        selectedItem!.ccRight(0)
+        selectedItem!.cfb_right(0)
     }
     @IBAction func marginRight10(sender: AnyObject) {
-        selectedItem!.ccRight(10)
+        selectedItem!.cfb_right(10)
     }
     @IBAction func marginRightAuto(sender: AnyObject) {
-        selectedItem!.ccRightAuto()
+        selectedItem!.cfb_rightAuto()
     }
 
     @IBAction func alignSelfFlexStart(sender: AnyObject) {
-        selectedItem!.alignSelf(.FlexStart)
+        selectedItem!.cfb_alignSelf(.FlexStart)
     }
 
     @IBAction func alignSelfFlexEnd(sender: AnyObject) {
-        selectedItem!.alignSelf(.FlexEnd)
+        selectedItem!.cfb_alignSelf(.FlexEnd)
     }
 
     @IBAction func alignselfCenter(sender: AnyObject) {
-        selectedItem!.alignSelf(.Center)
+        selectedItem!.cfb_alignSelf(.Center)
     }
 
     @IBAction func alignSelfBaseline(sender: AnyObject) {
-        selectedItem!.alignSelf(.Baseline)
+        selectedItem!.cfb_alignSelf(.Baseline)
     }
 
     @IBAction func alignSelfStetch(sender: AnyObject) {
-        selectedItem!.alignSelf(.Stretch)
+        selectedItem!.cfb_alignSelf(.Stretch)
     }
 
     @IBAction func alignSelfAuto(sender: AnyObject) {
-        selectedItem!.alignSelf(.Auto)
+        selectedItem!.cfb_alignSelf(.Auto)
     }
 
     @IBAction func flexGrow0(sender: AnyObject) {
-        selectedItem!.flexGrow(0)
+        selectedItem!.cfb_flexGrow(0)
     }
     @IBAction func flexGrow1(sender: AnyObject) {
-        selectedItem!.flexGrow(1)
+        selectedItem!.cfb_flexGrow(1)
     }
     @IBAction func flexGrow2(sender: AnyObject) {
-        selectedItem!.flexGrow(2)
+        selectedItem!.cfb_flexGrow(2)
     }
 
     @IBAction func toggleShrink(sender: AnyObject) {
@@ -193,12 +193,12 @@ class DemoViewController: UIViewController {
         }
     }
     @IBAction func flexShrink0(sender: AnyObject) {
-        selectedItem!.flexShrink(0)
+        selectedItem!.cfb_flexShrink(0)
     }
     @IBAction func flexShrink1(sender: AnyObject) {
-        selectedItem!.flexShrink(1)
+        selectedItem!.cfb_flexShrink(1)
     }
     @IBAction func flexShrink2(sender: AnyObject) {
-        selectedItem!.flexShrink(2)
+        selectedItem!.cfb_flexShrink(2)
     }
 }
