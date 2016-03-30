@@ -34,6 +34,7 @@ class DemoViewController: UIViewController {
             item2!,
             item3!.cfb_flexBasis(80, 80)
         )
+
         flexBox!.layer.borderWidth = 0.5
         flexBox!.layer.borderColor = UIColor.init(white: 0, alpha: 0.1).CGColor
 
