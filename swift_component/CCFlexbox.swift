@@ -218,7 +218,7 @@ private class CCLabelLayoutGuide: UILabel {
     private var alignItems: AlignItems = .Auto
     private let baseline:CCLabelLayoutGuide = CCLabelLayoutGuide.init() //for baseline alignment
 
-    private let layoutGuideSize:CGFloat = 2 //used for debugging
+    private let layoutGuideSize:CGFloat = 0 //used for debugging
     private var constraintIdentifier:String = NSUUID().UUIDString //used for clearing existing constraints
 
     public var updateConstraintsCount = 0;
@@ -328,8 +328,8 @@ private class CCLabelLayoutGuide: UILabel {
             let grow = max(getFlexGrowForItem(item), 0)
             let shrink = max(getFlexShrinkForItem(item), 0)
             if basis.mainBasis != UIViewNoIntrinsicMetric {
-                setConstantConstraint(item, attribute: axisAttributes.mainSize, constant: basis.mainBasis, .GreaterThanOrEqual, Float(250-grow))
-                setConstantConstraint(item, attribute: axisAttributes.mainSize, constant: basis.mainBasis, .Equal, Float(750-shrink))
+                setConstantConstraint(item, attribute: axisAttributes.mainSize, constant: basis.mainBasis, .GreaterThanOrEqual, Float(750-shrink)) //ContentCompressionResistancePriority
+                setConstantConstraint(item, attribute: axisAttributes.mainSize, constant: basis.mainBasis, .LessThanOrEqual, Float(251-grow)) //ContentHuggingPriority
 
                 //prevent content size changing bound size
                 item.setContentCompressionResistancePriority(1, forAxis: axisAttributes.mainAxis)
@@ -353,6 +353,7 @@ private class CCLabelLayoutGuide: UILabel {
                 previousAutoSpace.backgroundColor = UIColor.blackColor()
                 previousAutoSpace.translatesAutoresizingMaskIntoConstraints = false
                 self.addSubview(previousAutoSpace)
+                setAlignConstraint(item: previousAutoSpace, attribute: axisAttributes.crossPrevious)
                 setConstantConstraint(previousAutoSpace, attribute: axisAttributes.crossSize, constant: layoutGuideSize)
 
                 if subviews.count > 0 {
@@ -369,7 +370,11 @@ private class CCLabelLayoutGuide: UILabel {
             } else {
                 if justifyContent == .FlexEnd {
                     setAlignConstraint(item: item, attribute: axisAttributes.mainPrevious, constant: previousMargin, relatedBy: .GreaterThanOrEqual, toItem: self, attribute: axisAttributes.mainPrevious, priority: 999)
-                    setAlignConstraint(item: item, attribute: axisAttributes.mainPrevious, constant: previousMargin, relatedBy: .Equal, toItem: self, attribute: axisAttributes.mainPrevious, priority: UILayoutPriorityDefaultLow)
+                    if grows > 0 {
+                        setAlignConstraint(item: item, attribute: axisAttributes.mainPrevious, constant: previousMargin, relatedBy: .Equal, toItem: self, attribute: axisAttributes.mainPrevious, priority: 999)
+                    } else {
+                        setAlignConstraint(item: item, attribute: axisAttributes.mainPrevious, constant: previousMargin, relatedBy: .Equal, toItem: self, attribute: axisAttributes.mainPrevious, priority: UILayoutPriorityDefaultLow)
+                    }
                 } else {
                     setAlignConstraint(item: item, attribute: axisAttributes.mainPrevious, constant: previousMargin, relatedBy: .Equal, toItem: self, attribute: axisAttributes.mainPrevious, priority: UILayoutPriorityRequired)
                 }
@@ -390,6 +395,7 @@ private class CCLabelLayoutGuide: UILabel {
                 nextAutoSpace.backgroundColor = UIColor.blackColor()
                 nextAutoSpace.translatesAutoresizingMaskIntoConstraints = false
                 self.addSubview(nextAutoSpace)
+                setAlignConstraint(item: nextAutoSpace, attribute: axisAttributes.crossPrevious)
                 setConstantConstraint(nextAutoSpace, attribute: axisAttributes.crossSize, constant: layoutGuideSize)
                 setAlignConstraint(item: nextAutoSpace, attribute: axisAttributes.mainPrevious, constant: 0, relatedBy: .Equal, toItem: item, attribute: axisAttributes.mainNext, priority: UILayoutPriorityRequired)
 
@@ -404,7 +410,11 @@ private class CCLabelLayoutGuide: UILabel {
                         setAlignConstraint(item: self, attribute: axisAttributes.mainNext, constant: lastNextMargin, relatedBy: .Equal, toItem: item, attribute: axisAttributes.mainNext, priority: UILayoutPriorityRequired)
                     } else {
                         setAlignConstraint(item: self, attribute: axisAttributes.mainNext, constant: lastNextMargin, relatedBy: .GreaterThanOrEqual, toItem: item, attribute: axisAttributes.mainNext, priority: 999)
-                        setAlignConstraint(item: self, attribute: axisAttributes.mainNext, constant: lastNextMargin, relatedBy: .Equal, toItem: item, attribute: axisAttributes.mainNext, priority: UILayoutPriorityDefaultLow)
+                        if grows > 0 {
+                            setAlignConstraint(item: self, attribute: axisAttributes.mainNext, constant: lastNextMargin, relatedBy: .Equal, toItem: item, attribute: axisAttributes.mainNext, priority: 999)
+                        } else {
+                            setAlignConstraint(item: self, attribute: axisAttributes.mainNext, constant: lastNextMargin, relatedBy: .Equal, toItem: item, attribute: axisAttributes.mainNext, priority: UILayoutPriorityDefaultLow)
+                        }
                     }
 
                 }

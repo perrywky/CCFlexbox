@@ -14,9 +14,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+        let storyboard = UIStoryboard(name: "Demo", bundle: nil)
+        let vc = storyboard.instantiateViewControllerWithIdentifier("DemoViewController") as! DemoViewController
         let nav = UINavigationController.init(rootViewController: MasterViewController.init())
         window = UIWindow.init()
-        window!.rootViewController = nav
+        window!.rootViewController = vc
         window!.makeKeyAndVisible()
         window!.backgroundColor = UIColor.whiteColor()
         return true

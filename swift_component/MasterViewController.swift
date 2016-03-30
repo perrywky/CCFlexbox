@@ -67,7 +67,7 @@ class MasterViewController: UITableViewController {
                 label.text = "SpaceSeperate"
                 break;
             }
-            let img = UIImageView.init(image: UIImage.init(named: "wifi"))
+            let img = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
             let label1 = UILabel.init()
             label1.text = "--row--"
             label1.backgroundColor = UIColor.lightGrayColor()
@@ -362,7 +362,7 @@ class MasterViewController: UITableViewController {
             alignFrame(flexbox, view2: cell.contentView)
         } else if indexPath.row == 25 {
 
-            let img = UIImageView.init(image: UIImage.init(named: "wifi"))
+            let img = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
             img.flexBasis(40, 40)
 
             let label1 = UILabel.init()
@@ -419,7 +419,7 @@ class MasterViewController: UITableViewController {
             label1.text = "row1"
             label1.backgroundColor = UIColor.lightGrayColor()
 
-            let colimg = UIImageView.init(image: UIImage.init(named: "wifi"))
+            let colimg = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
             colimg.flexBasis(20, 20)
 
             let label3 = UILabel.init()
@@ -434,10 +434,10 @@ class MasterViewController: UITableViewController {
             let column = CCFlexbox.column(label1, colimg, CCFlexbox.row(label3, label4, label5).alignItems(.Center).justifyContent(.SpaceSeperate).alignSelf(.Stretch)).justifyContent(.SpaceBetween).alignItems(.Center)
             column.backgroundColor = UIColor.darkGrayColor()
 
-            let img = UIImageView.init(image: UIImage.init(named: "wifi"))
+            let img = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
             img.flexBasis(40, 40)
 
-            let img2 = UIImageView.init(image: UIImage.init(named: "wifi"))
+            let img2 = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
             img2.flexBasis(40, 40)
 
             let row = CCFlexbox.row(img.ccLeft(16), column.ccLeft(16).flexGrow(1).alignSelf(.Stretch), img2.ccRight(12)).alignItems(.Center)
@@ -469,7 +469,7 @@ class MasterViewController: UITableViewController {
             label1.text = "row1 grow(1)"
             label1.backgroundColor = UIColor.lightGrayColor()
 
-            let colimg = UIImageView.init(image: UIImage.init(named: "wifi"))
+            let colimg = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
             colimg.flexBasis(40, 40)
 
             let label3 = UILabel.init()
@@ -482,7 +482,7 @@ class MasterViewController: UITableViewController {
 
             let column = CCFlexbox.column(label1, label3.alignSelf(.Center))
 
-            let img = UIImageView.init(image: UIImage.init(named: "wifi"))
+            let img = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
             img.flexBasis(40, 40)
 
             let row = CCFlexbox.row(img.ccLeft(16), column.ccLeft(16).flexGrow(1), label4.ccLeft(12)).alignItems(.Center)
@@ -494,7 +494,7 @@ class MasterViewController: UITableViewController {
             label1.text = "col1"
             label1.backgroundColor = UIColor.lightGrayColor()
 
-            let colimg = UIImageView.init(image: UIImage.init(named: "wifi"))
+            let colimg = UIImageView.init(image: UIImage.init(named: "wifi.jpg"))
             colimg.flexBasis(20, 20)
 
             let label3 = UILabel.init()
