@@ -1,6 +1,6 @@
 //
 //  CCFlexbox.swift
-//  swift_component
+//   CCFlexbox
 //
 //  Created by Perry on 15/12/30.
 //  Copyright © 2015年 Perry. All rights reserved.

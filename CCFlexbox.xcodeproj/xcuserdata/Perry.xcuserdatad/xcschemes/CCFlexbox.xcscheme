@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C2AA90F61C315F0C006F6630"
-               BuildableName = "swift_component.app"
-               BlueprintName = "swift_component"
-               ReferencedContainer = "container:swift_component.xcodeproj">
+               BuildableName = "CCFlexbox.app"
+               BlueprintName = "CCFlexbox"
+               ReferencedContainer = "container:CCFlexbox.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C2AA910C1C315F0C006F6630"
-               BuildableName = "swift_componentTests.xctest"
-               BlueprintName = "swift_componentTests"
-               ReferencedContainer = "container:swift_component.xcodeproj">
+               BuildableName = "CCFlexbox.xctest"
+               BlueprintName = "CCFlexboxTests"
+               ReferencedContainer = "container:CCFlexbox.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -43,9 +43,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C2AA91171C315F0C006F6630"
-               BuildableName = "swift_componentUITests.xctest"
-               BlueprintName = "swift_componentUITests"
-               ReferencedContainer = "container:swift_component.xcodeproj">
+               BuildableName = "CCFlexbox.xctest"
+               BlueprintName = "CCFlexboxUITests"
+               ReferencedContainer = "container:CCFlexbox.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -53,9 +53,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C2AA90F61C315F0C006F6630"
-            BuildableName = "swift_component.app"
-            BlueprintName = "swift_component"
-            ReferencedContainer = "container:swift_component.xcodeproj">
+            BuildableName = "CCFlexbox.app"
+            BlueprintName = "CCFlexbox"
+            ReferencedContainer = "container:CCFlexbox.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -76,9 +76,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C2AA90F61C315F0C006F6630"
-            BuildableName = "swift_component.app"
-            BlueprintName = "swift_component"
-            ReferencedContainer = "container:swift_component.xcodeproj">
+            BuildableName = "CCFlexbox.app"
+            BlueprintName = "CCFlexbox"
+            ReferencedContainer = "container:CCFlexbox.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -95,9 +95,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C2AA90F61C315F0C006F6630"
-            BuildableName = "swift_component.app"
-            BlueprintName = "swift_component"
-            ReferencedContainer = "container:swift_component.xcodeproj">
+            BuildableName = "CCFlexbox.app"
+            BlueprintName = "CCFlexbox"
+            ReferencedContainer = "container:CCFlexbox.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

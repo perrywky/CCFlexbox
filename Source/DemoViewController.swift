@@ -1,6 +1,6 @@
 //
 //  DemoViewController.swift
-//  swift_component
+//   CCFlexbox
 //
 //  Created by Perry on 16/3/30.
 //  Copyright © 2016年 Perry. All rights reserved.

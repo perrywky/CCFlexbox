@@ -1,6 +1,6 @@
 //
 //  MasterViewController.swift
-//  swift_component
+//   CCFlexbox
 //
 //  Created by Perry on 15/12/28.
 //  Copyright © 2015年 Perry. All rights reserved.

@@ -8,7 +8,7 @@
         <!--Demo View Controller-->
         <scene sceneID="4iy-hv-O8v">
             <objects>
-                <viewController storyboardIdentifier="DemoViewController" id="FY9-93-2Ol" customClass="DemoViewController" customModule="swift_component" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="DemoViewController" id="FY9-93-2Ol" customClass="DemoViewController" customModule="CCFlexbox" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="Mkd-DY-aoh"/>
                         <viewControllerLayoutGuide type="bottom" id="ueD-k1-t4y"/>
