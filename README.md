@@ -4,9 +4,11 @@ Flexbox like layout container implemented by AutoLayout.
 
 <p align="center"><img src ="https://raw.githubusercontent.com/perrywky/CCFlexbox/master/demo.gif" /></p>
 
-## Usage
+## Demo
 
-Copy CCFlexbox.swift to your project and you're ready. Have fun with the demo project.
+Run the demo project to see the potentials.
+
+## Usage
 
 ```swift
 
@@ -34,6 +36,24 @@ CCFlexbox.row(
 )
 
 ```
+
+## Install
+
+### Cocoapods
+
+```pod
+
+    source 'https://github.com/CocoaPods/Specs.git'
+    platform :ios, '8.0'
+    use_frameworks!
+
+    pod 'CCFlexbox'
+
+```
+
+### iOS 7.0
+
+Copy Source/CCFlexbox.swift to your project. 
 
 ## License
 
